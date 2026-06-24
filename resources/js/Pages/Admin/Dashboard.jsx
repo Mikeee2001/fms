@@ -132,7 +132,7 @@ export default function Dashboard({
                                 },
                                 tooltip: {
                                     callbacks: {
-                                        label: function(context) {
+                                        label: function (context) {
                                             return `₱${context.parsed.y.toLocaleString()}`;
                                         }
                                     }
@@ -170,93 +170,93 @@ export default function Dashboard({
                     </div>
 
                     {/* Stats Grid - Better arranged and wider */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-4 mb-8">
-    {/* Total Users */}
-    <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
-        <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm font-medium text-stone-400 mb-1">Total Users</p>
-                <p className="text-3xl font-bold text-white">{safeStats.totalUsers}</p>
-                <p className="text-xs text-stone-500 mt-2">Registered accounts</p>
-            </div>
-            <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
-                <Users className="h-6 w-6 text-stone-400" />
-            </div>
-        </div>
-    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-6 gap-4 mb-8">
+                        {/* Total Users */}
+                        <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-stone-400 mb-1">Total Users</p>
+                                    <p className="text-3xl font-bold text-white">{safeStats.totalUsers}</p>
+                                    <p className="text-xs text-stone-500 mt-2">Registered accounts</p>
+                                </div>
+                                <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
+                                    <Users className="h-6 w-6 text-stone-400" />
+                                </div>
+                            </div>
+                        </div>
 
-    {/* Total Customers */}
-    <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
-        <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm font-medium text-stone-400 mb-1">Total Customers</p>
-                <p className="text-3xl font-bold text-white">{safeStats.totalCustomers}</p>
-                <p className="text-xs text-emerald-500 mt-2">Conversion: {safeStats.conversionRate}%</p>
-            </div>
-            <div className="bg-emerald-900/30 rounded-xl p-3 group-hover:bg-emerald-800/30 transition-colors">
-                <Users className="h-6 w-6 text-emerald-500" />
-            </div>
-        </div>
-    </div>
+                        {/* Total Customers */}
+                        <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-stone-400 mb-1">Total Customers</p>
+                                    <p className="text-3xl font-bold text-white">{safeStats.totalCustomers}</p>
+                                    <p className="text-xs text-emerald-500 mt-2">Conversion: {safeStats.conversionRate}%</p>
+                                </div>
+                                <div className="bg-emerald-900/30 rounded-xl p-3 group-hover:bg-emerald-800/30 transition-colors">
+                                    <Users className="h-6 w-6 text-emerald-500" />
+                                </div>
+                            </div>
+                        </div>
 
-    {/* Total Products */}
-    <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
-        <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm font-medium text-stone-400 mb-1">Total Products</p>
-                <p className="text-3xl font-bold text-white">{safeStats.totalProducts}</p>
-                <p className="text-xs text-stone-500 mt-2">Active products</p>
-            </div>
-            <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
-                <Package className="h-6 w-6 text-stone-400" />
-            </div>
-        </div>
-    </div>
+                        {/* Total Products */}
+                        <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-stone-400 mb-1">Total Products</p>
+                                    <p className="text-3xl font-bold text-white">{safeStats.totalProducts}</p>
+                                    <p className="text-xs text-stone-500 mt-2">Active products</p>
+                                </div>
+                                <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
+                                    <Package className="h-6 w-6 text-stone-400" />
+                                </div>
+                            </div>
+                        </div>
 
-    {/* Total Orders */}
-    <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
-        <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm font-medium text-stone-400 mb-1">Total Orders</p>
-                <p className="text-3xl font-bold text-white">{safeStats.totalOrders}</p>
-                <p className="text-xs text-stone-500 mt-2">Lifetime orders</p>
-            </div>
-            <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
-                <ShoppingBag className="h-6 w-6 text-stone-400" />
-            </div>
-        </div>
-    </div>
+                        {/* Total Orders */}
+                        <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-stone-400 mb-1">Total Orders</p>
+                                    <p className="text-3xl font-bold text-white">{safeStats.totalOrders}</p>
+                                    <p className="text-xs text-stone-500 mt-2">Lifetime orders</p>
+                                </div>
+                                <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
+                                    <ShoppingBag className="h-6 w-6 text-stone-400" />
+                                </div>
+                            </div>
+                        </div>
 
-    {/* Total Revenue */}
-    <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
-        <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm font-medium text-stone-400 mb-1">Total Revenue</p>
-                <p className="text-3xl font-bold text-amber-500">₱{safeStats.totalRevenue.toLocaleString()}</p>
-                <p className="text-xs text-stone-500 mt-2">From all orders</p>
-            </div>
-            <div className="bg-amber-900/30 rounded-xl p-3 group-hover:bg-amber-800/30 transition-colors">
-                <CreditCard className="h-6 w-6 text-amber-500" />
-            </div>
-        </div>
-    </div>
+                        {/* Total Revenue */}
+                        <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-stone-400 mb-1">Total Revenue</p>
+                                    <p className="text-3xl font-bold text-amber-500">₱{safeStats.totalRevenue.toLocaleString()}</p>
+                                    <p className="text-xs text-stone-500 mt-2">From all orders</p>
+                                </div>
+                                <div className="bg-amber-900/30 rounded-xl p-3 group-hover:bg-amber-800/30 transition-colors">
+                                    <CreditCard className="h-6 w-6 text-amber-500" />
+                                </div>
+                            </div>
+                        </div>
 
-    {/* Average Order Value */}
-    <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
-        <div className="flex items-center justify-between">
-            <div>
-                <p className="text-sm font-medium text-stone-400 mb-1">Avg Order Value</p>
-                <p className="text-3xl font-bold text-white">
-                    ₱{(safeStats.totalRevenue / (safeStats.totalOrders || 1)).toLocaleString()}
-                </p>
-                <p className="text-xs text-stone-500 mt-2">Per transaction</p>
-            </div>
-            <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
-                <TrendingUp className="h-6 w-6 text-stone-400" />
-            </div>
-        </div>
-    </div>
-</div>
+                        {/* Average Order Value */}
+                        <div className="bg-black border border-stone-800 rounded-lg p-5 hover:border-amber-800 transition-all group">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-stone-400 mb-1">Avg Order Value</p>
+                                    <p className="text-3xl font-bold text-white">
+                                        ₱{(safeStats.totalRevenue / (safeStats.totalOrders || 1)).toLocaleString()}
+                                    </p>
+                                    <p className="text-xs text-stone-500 mt-2">Per transaction</p>
+                                </div>
+                                <div className="bg-stone-800 rounded-xl p-3 group-hover:bg-stone-700 transition-colors">
+                                    <TrendingUp className="h-6 w-6 text-stone-400" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Comparison Section with Filters */}
                     <div className="bg-black border border-stone-800 rounded-lg mb-8">
@@ -272,11 +272,10 @@ export default function Dashboard({
                                             setPeriod('weekly');
                                             updateFilter('weekly', year, month, week);
                                         }}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                            period === 'weekly'
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${period === 'weekly'
                                                 ? 'bg-amber-600 text-white'
                                                 : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                        }`}
+                                            }`}
                                     >
                                         Weekly
                                     </button>
@@ -285,11 +284,10 @@ export default function Dashboard({
                                             setPeriod('monthly');
                                             updateFilter('monthly', year, month, week);
                                         }}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                            period === 'monthly'
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${period === 'monthly'
                                                 ? 'bg-amber-600 text-white'
                                                 : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                        }`}
+                                            }`}
                                     >
                                         Monthly
                                     </button>
@@ -298,11 +296,10 @@ export default function Dashboard({
                                             setPeriod('yearly');
                                             updateFilter('yearly', year, month, week);
                                         }}
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                            period === 'yearly'
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${period === 'yearly'
                                                 ? 'bg-amber-600 text-white'
                                                 : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                        }`}
+                                            }`}
                                     >
                                         Yearly
                                     </button>
@@ -398,8 +395,8 @@ export default function Dashboard({
                                 <h3 className="text-lg font-medium text-white">Sales Overview</h3>
                                 <p className="text-sm text-stone-400 mt-1">
                                     {period === 'weekly' ? 'Daily sales for selected week' :
-                                     period === 'monthly' ? 'Daily sales for selected month' :
-                                     'Monthly sales for selected year'}
+                                        period === 'monthly' ? 'Daily sales for selected month' :
+                                            'Monthly sales for selected year'}
                                 </p>
                             </div>
                             <div className="p-6">

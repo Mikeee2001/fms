@@ -69,41 +69,41 @@ class DeliveryZoneController extends Controller
         return redirect()->back()->with('success', 'Location added to zone successfully.');
     }
 
-public function addLocationWithCoordinates(Request $request, DeliveryZone $zone)
-{
-    \Log::info('=== ADD LOCATION WITH COORDINATES ===');
-    \Log::info('Zone ID: ' . $zone->id);
-    \Log::info('Request data:', $request->all());
+    public function addLocationWithCoordinates(Request $request, DeliveryZone $zone)
+    {
+        \Log::info('=== ADD LOCATION WITH COORDINATES ===');
+        \Log::info('Zone ID: ' . $zone->id);
+        \Log::info('Request data:', $request->all());
 
-    try {
-        $validated = $request->validate([
-            'location_name' => 'required|string|max:255',
-            'location_type' => 'required|in:city,barangay',
-            'parent_city' => 'nullable|string|max:255',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'place_id' => 'nullable|string', // Keep as string, but we'll convert if needed
-        ]);
+        try {
+            $validated = $request->validate([
+                'location_name' => 'required|string|max:255',
+                'location_type' => 'required|in:city,barangay',
+                'parent_city' => 'nullable|string|max:255',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
+                'place_id' => 'nullable|string', // Keep as string, but we'll convert if needed
+            ]);
 
-        // Convert place_id to string if it's numeric
-        if (isset($validated['place_id'])) {
-            $validated['place_id'] = (string) $validated['place_id'];
+            // Convert place_id to string if it's numeric
+            if (isset($validated['place_id'])) {
+                $validated['place_id'] = (string) $validated['place_id'];
+            }
+
+            \Log::info('Validation passed', $validated);
+
+            $location = $zone->locations()->create($validated);
+
+            \Log::info('Location created with ID: ' . $location->id);
+
+            return redirect()->back()->with('success', 'Location added to zone successfully.');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to add location: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'Failed to add location: ' . $e->getMessage());
         }
-
-        \Log::info('Validation passed', $validated);
-
-        $location = $zone->locations()->create($validated);
-
-        \Log::info('Location created with ID: ' . $location->id);
-
-        return redirect()->back()->with('success', 'Location added to zone successfully.');
-
-    } catch (\Exception $e) {
-        \Log::error('Failed to add location: ' . $e->getMessage());
-        \Log::error('Stack trace: ' . $e->getTraceAsString());
-        return redirect()->back()->with('error', 'Failed to add location: ' . $e->getMessage());
     }
-}
 
 
 
@@ -143,31 +143,33 @@ public function addLocationWithCoordinates(Request $request, DeliveryZone $zone)
 
 
     public function getPublicZones()
-{
-    $zones = DeliveryZone::with(['locations' => function($query) {
-        $query->whereNotNull('latitude')
-              ->whereNotNull('longitude');
-    }])
-    ->where('is_active', true)
-    ->orderBy('sort_order')
-    ->get()
-    ->map(function ($zone) {
-        return [
-            'id' => $zone->id,
-            'name' => $zone->name,
-            'delivery_fee' => $zone->delivery_fee,
-            'locations' => $zone->locations->map(function ($location) {
+    {
+        $zones = DeliveryZone::with([
+            'locations' => function ($query) {
+                $query->whereNotNull('latitude')
+                    ->whereNotNull('longitude');
+            }
+        ])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(function ($zone) {
                 return [
-                    'id' => $location->id,
-                    'location_name' => $location->location_name,
-                    'latitude' => (float) $location->latitude,
-                    'longitude' => (float) $location->longitude,
-                    'location_type' => $location->location_type,
+                    'id' => $zone->id,
+                    'name' => $zone->name,
+                    'delivery_fee' => $zone->delivery_fee,
+                    'locations' => $zone->locations->map(function ($location) {
+                        return [
+                            'id' => $location->id,
+                            'location_name' => $location->location_name,
+                            'latitude' => (float) $location->latitude,
+                            'longitude' => (float) $location->longitude,
+                            'location_type' => $location->location_type,
+                        ];
+                    }),
                 ];
-            }),
-        ];
-    });
+            });
 
-    return response()->json($zones);
-}
+        return response()->json($zones);
+    }
 }

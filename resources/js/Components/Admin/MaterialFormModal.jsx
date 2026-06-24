@@ -23,12 +23,15 @@ export default function MaterialFormModal({ isOpen, onClose, material = null, su
 
     const units = [
         { value: 'pieces', label: 'Pieces', icon: '📦' },
-        { value: 'meters', label: 'Meters', icon: '📏' },
-        { value: 'liters', label: 'Liters', icon: '🧴' },
-        { value: 'kilograms', label: 'Kilograms', icon: '⚖️' },
-        { value: 'grams', label: 'Grams', icon: '⚖️' },
-        { value: 'sets', label: 'Sets', icon: '🎯' },
-        { value: 'boxes', label: 'Boxes', icon: '📦' }
+        { value: 'sheets', label: 'Sheets', icon: '🪵' },      // Plywood, MDF
+        { value: 'boards', label: 'Boards', icon: '🪵' },      // Lumber
+        { value: 'meters', label: 'Meters', icon: '📏' },      // Edge banding, wood lengths
+        { value: 'feet', label: 'Feet', icon: '📏' },          // Lumber
+        { value: 'rolls', label: 'Rolls', icon: '🧵' },        // Fabric, veneer
+        { value: 'liters', label: 'Liters', icon: '🧴' },      // Paint, varnish, stain
+        { value: 'kilograms', label: 'Kilograms', icon: '⚖️' }, // Hardware, adhesives
+        { value: 'sets', label: 'Sets', icon: '🎯' },          // Handles, hinges
+        { value: 'boxes', label: 'Boxes', icon: '📦' }         // Screws, nails
     ];
 
     useEffect(() => {
@@ -196,11 +199,10 @@ export default function MaterialFormModal({ isOpen, onClose, material = null, su
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`pb-3 text-sm font-medium transition-all duration-200 relative ${
-                                    activeTab === tab.id
-                                        ? 'text-amber-500'
-                                        : 'text-stone-400 hover:text-stone-300'
-                                }`}
+                                className={`pb-3 text-sm font-medium transition-all duration-200 relative ${activeTab === tab.id
+                                    ? 'text-amber-500'
+                                    : 'text-stone-400 hover:text-stone-300'
+                                    }`}
                             >
                                 <div className="flex items-center gap-2">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

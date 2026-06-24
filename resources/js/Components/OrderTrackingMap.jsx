@@ -318,15 +318,15 @@ export default function OrderTrackingMap({ orderId, currentStatus }) {
                     <p className="text-sm font-semibold text-emerald-800">{routeData.sender.name}</p>
                 </div>
 
-               <div className="bg-red-50 rounded-xl p-3 border border-red-200">
-    <div className="flex items-center gap-2 text-red-700 mb-1">
-        <MapPin className="w-4 h-4" />
-        <span className="text-xs font-medium">To</span>
-    </div>
-    <p className="text-sm font-semibold text-red-800 truncate" title={routeData.receiver.full_address}>
-        {routeData.receiver.full_address || routeData.receiver.city || 'Delivery Location'}
-    </p>
-</div>
+                <div className="bg-red-50 rounded-xl p-3 border border-red-200">
+                    <div className="flex items-center gap-2 text-red-700 mb-1">
+                        <MapPin className="w-4 h-4" />
+                        <span className="text-xs font-medium">To</span>
+                    </div>
+                    <p className="text-sm font-semibold text-red-800 truncate" title={routeData.receiver.full_address}>
+                        {routeData.receiver.full_address || routeData.receiver.city || 'Delivery Location'}
+                    </p>
+                </div>
             </div>
 
             {/* Distance & Time */}

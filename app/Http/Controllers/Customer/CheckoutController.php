@@ -11,7 +11,7 @@ use App\Models\StockLog;
 use App\Models\MaterialStockLog;
 use App\Models\CustomizationOption;
 use App\Models\User;
-use App\Notifications\NewOrderNotification;
+// use App\Notifications\NewOrderNotification;
 use App\Services\DeliveryZoneService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -160,7 +160,7 @@ public function store(Request $request)
                         'name' => $validated['name'],
                         'email' => $validated['email'],
                         'password' => bcrypt(\Illuminate\Support\Str::random(16)),
-                        'is_admin' => false,
+                        'role_as' => 'user',
                     ]);
                     Log::info('New user created: ' . $user->id);
 
@@ -355,7 +355,7 @@ public function store(Request $request)
                 // ============================================
 
                 // 1. Send notification to ALL admin users about new order
-                $admins = User::where('is_admin', true)->get();
+                $admins = User::where('role_as', 'admin')->get();
                 foreach ($admins as $admin) {
                     try {
                         $admin->notify(new \App\Notifications\NewOrderNotification($order));

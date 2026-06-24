@@ -131,7 +131,8 @@ export default function ProductForm({ product = null, categories = [], customiza
             'image/jpeg',
             'image/png',
             'image/jpg',
-            'image/gif'
+            'image/gif',
+            'image/webp'
         ];
 
         const maxSize = 2 * 1024 * 1024;

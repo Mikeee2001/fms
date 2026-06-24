@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Inventory;
 use App\Models\ProductSize;
-use App\Models\Attribute;
-use Illuminate\Support\Facades\DB;
+// use App\Models\Attribute;
+// use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\CustomizationCategory;
 use Illuminate\Http\Request;
@@ -91,7 +91,7 @@ class ProductController extends Controller
                 'sizes.*.additional_price' => 'numeric|min:0',
                 'sizes.*.stock' => 'integer|min:0',
                 'images' => 'nullable|array',
-                'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             ]);
 
             // Create product
@@ -225,7 +225,7 @@ class ProductController extends Controller
                 'sizes.*.additional_price' => 'numeric|min:0',
                 'sizes.*.stock' => 'integer|min:0',
                 'images' => 'nullable|array',
-                'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             ]);
 
             // Update product basic info
@@ -365,7 +365,7 @@ class ProductController extends Controller
     {
         try {
             $request->validate([
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
             ]);
 
             $path = $request->file('image')->store('products', 'public');

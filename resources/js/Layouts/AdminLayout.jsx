@@ -14,7 +14,23 @@ export default function AdminLayout({ children }) {
 
     // Fetch pending delivery requests count for badge
     useEffect(() => {
-        if (user?.is_admin) {
+        // if (user?.is_admin) {
+        //     const fetchPendingCount = async () => {
+        //         try {
+        //             const response = await axios.get(route('admin.delivery-requests.stats'));
+        //             setPendingRequestsCount(response.data.pending_count);
+        //         } catch (error) {
+        //             console.error('Failed to fetch pending requests:', error);
+        //         }
+        //     };
+
+        //     fetchPendingCount();
+
+        //     // Refresh every 30 seconds
+        //     const interval = setInterval(fetchPendingCount, 30000);
+        //     return () => clearInterval(interval);
+        // }
+        if (user?.role_as === 'admin') {
             const fetchPendingCount = async () => {
                 try {
                     const response = await axios.get(route('admin.delivery-requests.stats'));
@@ -26,11 +42,11 @@ export default function AdminLayout({ children }) {
 
             fetchPendingCount();
 
-            // Refresh every 30 seconds
             const interval = setInterval(fetchPendingCount, 30000);
             return () => clearInterval(interval);
         }
     }, [user]);
+
 
     // Auto-refresh notifications every 30 seconds
     useEffect(() => {
@@ -88,6 +104,16 @@ export default function AdminLayout({ children }) {
                 { name: 'Orders', href: '/admin/orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
             ]
         },
+        {
+            title: 'User Management',
+            items: [
+                {
+                    name: 'Users',
+                    href: '/admin/users',
+                    icon: 'M17 20h5v-2a4 4 0 00-5.356-3.772M9 20H4v-2a4 4 0 015.356-3.772M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
+                },
+            ]
+        }
     ];
 
     if (!user) {

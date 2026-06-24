@@ -165,7 +165,9 @@ export default function ImageManager({ images = [], existingImages = [], onImage
         'image/jpeg',
         'image/png',
         'image/jpg',
-        'image/gif'
+        'image/gif',
+        'image/webp'
+
     ];
 
     const validateImage = (file) => {
@@ -214,7 +216,7 @@ export default function ImageManager({ images = [], existingImages = [], onImage
                                     ref={fileInputRef}
                                     type="file"
                                     multiple
-                                    accept="image/jpeg,image/png,image/jpg,image/gif"
+                                    accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                                     onChange={handleImageChange}
                                     className="sr-only"
                                 />
@@ -305,7 +307,7 @@ export default function ImageManager({ images = [], existingImages = [], onImage
             <input
                 type="file"
                 ref={replaceInputRef}
-                accept="image/jpeg,image/png,image/jpg,image/gif"
+                accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                 className="hidden"
                 onChange={handleReplaceImage}
             />

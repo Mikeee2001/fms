@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\PaymentLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -52,6 +53,10 @@ protected $casts = [
         return $this->hasMany(OrderItem::class);
     }
 
+    public function paymentLogs()
+    {
+        return $this->hasMany(PaymentLog::class);
+    }
     // Payment status constants
 const PAYMENT_PENDING = 'pending';
 const PAYMENT_PENDING_PAYMENT = 'pending_payment';
