@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\Supplier;
+use App\Models\SupplierCategory;
+use App\Models\User;
+use App\Notifications\SupplierRegistrationNotification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Inertia\Inertia;
+
+class SupplierRegisterController extends Controller
+{
+    public function getSupplierRegistration()
+    {
+        return Inertia::render('Auth/SupplierRegistration');
+    }
+
+
+    public function supplierRegistration(Request $request)
+    {
+
+        // dd([
+        //     'hasFile' => $request->hasFile('company_logo'),
+        //     'file' => $request->file('company_logo'),
+        //     'all' => $request->all(),
+        // ]);
+        $validated = $request->validate([
+            'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'company_name' => 'required|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'contact_number' => 'nullable|string|max:50',
+            'email' => 'required|email|unique:users,email|max:255',
+            'address' => 'nullable|string',
+            'password' => 'required|min:8|confirmed',
+            'categories' => ['required', 'array'],
+            'categories.*' => ['string'],
+        ]);
+
+        DB::transaction(function () use ($request, $validated) {
+
+            $user = User::create([
+                'name' => $validated['company_name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'role_as' => 'supplier', // optional
+            ]);
+
+            $logoPath = null;
+
+            if ($request->hasFile('company_logo')) {
+                $logoPath = $request->file('company_logo')
+                    ->store('supplier_logos', 'public');
+            }
+
+            $supplier = Supplier::create([
+                'user_id' => $user->id,
+                'company_logo' => $validated['contact_person'] ?? null,
+                'company_name' => $validated['company_name'],
+                'contact_person' => $validated['contact_person'] ?? null,
+                'contact_number' => $validated['contact_number'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'status' => 'inactive',
+            ]);
+
+            $categoryIds = SupplierCategory::whereIn(
+                'name',
+                $validated['categories']
+            )->pluck('id');
+
+            $supplier->categories()->attach($categoryIds);
+
+            $admins = User::where('role_as', 'admin')->get();
+
+            Notification::send(
+                $admins,
+                new SupplierRegistrationNotification($supplier)
+            );
+        });
+
+        return redirect()
+            ->route('login')
+            ->with(
+                'success',
+                'Registration successful! Your supplier account is pending approval from the administrator. Please wait for approval before logging in.'
+            );
+    }
+}

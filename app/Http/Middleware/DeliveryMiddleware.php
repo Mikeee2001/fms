@@ -16,12 +16,12 @@ class DeliveryMiddleware
      */
   public function handle(Request $request, Closure $next): Response
     {
-        // Check if user is authenticated and is admin
+        // Check if user is authenticated and is delivery
         if (Auth::check() && Auth::user()->role_as === 'delivery') {
             return $next($request);
         }
 
-        // If not admin, redirect to home page with error message
-        return redirect('/')->with('error', 'You do not have admin access.');
+        // If not delivery, redirect to home page with error message
+        return redirect('/')->with('error', 'You do not have delivery access.');
     }
 }

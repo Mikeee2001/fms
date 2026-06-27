@@ -17,7 +17,7 @@ import {
     HeartHandshake,
     CheckCircle,
     XCircle,
-    Loader
+    Loader,
 } from 'lucide-react';
 
 export default function Welcome({ auth, laravelVersion, phpVersion }) {
@@ -49,73 +49,73 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
     // Check delivery availability
     // Check delivery availability
-const checkDeliveryAvailability = async () => {
-    if (!checkLocation.trim()) {
-        setDeliveryResult({
-            available: false,
-            message: 'Please enter a location to check'
-        });
-        setShowResult(true);
-        setTimeout(() => setShowResult(false), 3000);
-        return;
-    }
-
-    setIsChecking(true);
-    setShowResult(false);
-
-    try {
-        // Try to determine if input is a city or barangay
-        const location = checkLocation.trim();
-
-        // Send as city first, also include as barangay if it might be one
-        const response = await fetch(route('checkout.validate-delivery'), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                city: location,
-                barangay: location // Send same value as both city and barangay
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.available) {
-            let feeMessage = '';
-            if (data.delivery_fee === 0) {
-                feeMessage = '✓ Great news! We deliver to your area with FREE delivery!';
-            } else {
-                feeMessage = `✓ We deliver to your area! Delivery fee: ₱${data.delivery_fee.toLocaleString()}`;
-            }
-
-            setDeliveryResult({
-                available: true,
-                fee: data.delivery_fee,
-                matched_on: data.matched_on,
-                matched_location: data.matched_location,
-                message: feeMessage
-            });
-        } else {
+    const checkDeliveryAvailability = async () => {
+        if (!checkLocation.trim()) {
             setDeliveryResult({
                 available: false,
-                message: `We currently do not deliver to "${checkLocation}" yet. Please submit a delivery request and we'll review it.`
+                message: 'Please enter a location to check'
             });
+            setShowResult(true);
+            setTimeout(() => setShowResult(false), 3000);
+            return;
         }
-    } catch (error) {
-        console.error('Delivery check error:', error);
-        setDeliveryResult({
-            available: false,
-            message: 'Unable to check delivery. Please try again or contact us directly.'
-        });
-    } finally {
-        setIsChecking(false);
-        setShowResult(true);
-        setTimeout(() => setShowResult(false), 5000);
-    }
-};
+
+        setIsChecking(true);
+        setShowResult(false);
+
+        try {
+            // Try to determine if input is a city or barangay
+            const location = checkLocation.trim();
+
+            // Send as city first, also include as barangay if it might be one
+            const response = await fetch(route('checkout.validate-delivery'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    city: location,
+                    barangay: location // Send same value as both city and barangay
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.available) {
+                let feeMessage = '';
+                if (data.delivery_fee === 0) {
+                    feeMessage = '✓ Great news! We deliver to your area with FREE delivery!';
+                } else {
+                    feeMessage = `✓ We deliver to your area! Delivery fee: ₱${data.delivery_fee.toLocaleString()}`;
+                }
+
+                setDeliveryResult({
+                    available: true,
+                    fee: data.delivery_fee,
+                    matched_on: data.matched_on,
+                    matched_location: data.matched_location,
+                    message: feeMessage
+                });
+            } else {
+                setDeliveryResult({
+                    available: false,
+                    message: `We currently do not deliver to "${checkLocation}" yet. Please submit a delivery request and we'll review it.`
+                });
+            }
+        } catch (error) {
+            console.error('Delivery check error:', error);
+            setDeliveryResult({
+                available: false,
+                message: 'Unable to check delivery. Please try again or contact us directly.'
+            });
+        } finally {
+            setIsChecking(false);
+            setShowResult(true);
+            setTimeout(() => setShowResult(false), 5000);
+        }
+    };
 
 
 
@@ -448,61 +448,85 @@ const checkDeliveryAvailability = async () => {
                     </div>
                     <p className="text-amber-100 text-sm mt-4">📍 Free delivery for Cagayan de Oro and El Salvador City areas</p>
 
+
+
+
                     {/* Result Toast/Notification */}
                     {/* Result Toast/Notification */}
-{showResult && deliveryResult && (
-    <div className={`fixed bottom-6 right-6 z-50 max-w-sm w-full animate-slide-in-right`}>
-        <div className={`rounded-xl shadow-xl p-4 ${
-            deliveryResult.available
-                ? 'bg-emerald-500 text-white'
-                : 'bg-red-500 text-white'
-        }`}>
-            <div className="flex items-start gap-3">
-                {deliveryResult.available ? (
-                    <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                ) : (
-                    <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                )}
-                <div className="flex-1">
-                    <p className="font-semibold text-sm">
-                        {deliveryResult.available ? 'Delivery Available!' : 'Delivery Unavailable'}
-                    </p>
-                    <p className="text-sm opacity-90 mt-0.5">{deliveryResult.message}</p>
-                    {deliveryResult.available && deliveryResult.fee === 0 && (
-                        <div className="mt-2 inline-flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5 text-xs">
-                            <Truck className="w-3 h-3" />
-                            FREE DELIVERY
+                    {showResult && deliveryResult && (
+                        <div className={`fixed bottom-6 right-6 z-50 max-w-sm w-full animate-slide-in-right`}>
+                            <div className={`rounded-xl shadow-xl p-4 ${deliveryResult.available
+                                ? 'bg-emerald-500 text-white'
+                                : 'bg-red-500 text-white'
+                                }`}>
+                                <div className="flex items-start gap-3">
+                                    {deliveryResult.available ? (
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                    ) : (
+                                        <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                    )}
+                                    <div className="flex-1">
+                                        <p className="font-semibold text-sm">
+                                            {deliveryResult.available ? 'Delivery Available!' : 'Delivery Unavailable'}
+                                        </p>
+                                        <p className="text-sm opacity-90 mt-0.5">{deliveryResult.message}</p>
+                                        {deliveryResult.available && deliveryResult.fee === 0 && (
+                                            <div className="mt-2 inline-flex items-center gap-1 bg-white/20 rounded-full px-2 py-0.5 text-xs">
+                                                <Truck className="w-3 h-3" />
+                                                FREE DELIVERY
+                                            </div>
+                                        )}
+                                        {deliveryResult.available && deliveryResult.matched_location && (
+                                            <p className="text-xs opacity-75 mt-1">
+                                                Matched with: {deliveryResult.matched_location}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={() => setShowResult(false)}
+                                        className="text-white/70 hover:text-white"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                                {!deliveryResult.available && (
+                                    <div className="mt-3 pt-2 border-t border-white/20">
+                                        <Link
+                                            href="/contact"
+                                            className="text-xs flex items-center gap-1 hover:underline"
+                                        >
+                                            Contact us for delivery inquiry
+                                            <ArrowRight className="w-3 h-3" />
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
-                    {deliveryResult.available && deliveryResult.matched_location && (
-                        <p className="text-xs opacity-75 mt-1">
-                            Matched with: {deliveryResult.matched_location}
-                        </p>
-                    )}
                 </div>
-                <button
-                    onClick={() => setShowResult(false)}
-                    className="text-white/70 hover:text-white"
-                >
-                    ×
-                </button>
             </div>
-            {!deliveryResult.available && (
-                <div className="mt-3 pt-2 border-t border-white/20">
-                    <Link
-                        href="/contact"
-                        className="text-xs flex items-center gap-1 hover:underline"
-                    >
-                        Contact us for delivery inquiry
-                        <ArrowRight className="w-3 h-3" />
-                    </Link>
+            {!auth?.user && (
+                <div className="py-16 bg-stone-100 text-center">
+                    <div className="max-w-3xl mx-auto px-4">
+                        <h3 className="text-2xl font-bold text-stone-800 mb-4">
+                            Are you a furniture supplier?
+                        </h3>
+
+                        <p className="text-stone-600 mb-6">
+                            Join our growing network of artisans and suppliers.
+                            Grow your business with A' Arfeels Trading.
+                        </p>
+
+                        <Link
+                            href="/supplier/register"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-stone-300 rounded-full font-semibold text-stone-800 hover:border-amber-500 hover:text-amber-600 transition-all"
+                        >
+                            Register as a Supplier
+                            <ArrowRight className="w-4 h-4" />
+                        </Link>
+                    </div>
                 </div>
             )}
-        </div>
-    </div>
-)}
-                </div>
-            </div>
 
             <style>{`
                 @keyframes slide-in-right {

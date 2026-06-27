@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\PaymentLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
@@ -57,6 +58,14 @@ protected $casts = [
     {
         return $this->hasMany(PaymentLog::class);
     }
+
+
+    // Get the delivery details for this order (returns null if not scheduled yet)
+    public function delivery(): HasOne
+    {
+        return $this->hasOne(Delivery::class, 'order_id');
+    }
+
     // Payment status constants
 const PAYMENT_PENDING = 'pending';
 const PAYMENT_PENDING_PAYMENT = 'pending_payment';

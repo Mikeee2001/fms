@@ -3,10 +3,15 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Cart;
+use App\Models\DeliveryPersonnel;
+use App\Models\Manager;
+use App\Models\MaterialStockLog;
+use App\Models\Order;
+use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-// use App\Notifications\NewOrderNotification;
 use Laravel\Sanctum\HasApiTokens;
 // use App\Notifications\OrderStatusUpdatedNotification;
 
@@ -65,9 +70,14 @@ class User extends Authenticatable
         return $this->role_as === 'delivery';
     }
 
-    public function isWorker()
+    public function isManager()
     {
-        return $this->role_as === 'worker';
+        return $this->role_as === 'manager';
+    }
+
+     public function isSupplier()
+    {
+        return $this->role_as === 'supplier';
     }
 
 
@@ -102,4 +112,32 @@ class User extends Authenticatable
     {
         return $this->email;
     }
+
+    /**
+     * Get the manager profile associated with the user.
+     */
+    public function manager()
+    {
+        // Assumes managers table has a user_id foreign key
+        return $this->hasOne(Manager::class, 'user_id');
+    }
+
+    /**
+     * Get the delivery personnel profile associated with the user.
+     */
+    public function deliveryPersonnel()
+    {
+        // Assumes delivery_personnels table has a user_id foreign key
+        return $this->hasOne(DeliveryPersonnel::class, 'user_id');
+    }
+
+    /**
+     * Get the supplier profile associated with the user.
+     */
+    public function supplier()
+    {
+        // Assumes managers table has a user_id foreign key
+        return $this->hasOne(Supplier::class, 'user_id');
+    }
+
 }

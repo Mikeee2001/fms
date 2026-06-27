@@ -21,6 +21,7 @@ class OrderController extends Controller
                 return $order;
             });
 
+
         $stats = [
             'total_orders' => Order::count(),
             'pending_orders' => Order::where('status', 'pending')->count(),
@@ -29,6 +30,8 @@ class OrderController extends Controller
             'completed_orders' => Order::where('status', 'completed')->count(),
             'cancelled_orders' => Order::where('status', 'cancelled')->count(),
             'total_revenue' => Order::where('status', 'completed')->sum('total_price'),
+
+            'total_profit' => Order::where('status', 'completed')->count(),
         ];
 
         return Inertia::render('Admin/Orders/Index', [
@@ -51,7 +54,7 @@ class OrderController extends Controller
         ]);
     }
 
-        public function update(Request $request, Order $order)
+    public function update(Request $request, Order $order)
     {
         $validated = $request->validate([
             'status' => 'required|in:pending,processing,shipped,completed,cancelled',
@@ -60,9 +63,49 @@ class OrderController extends Controller
 
         $oldStatus = $order->status;
 
-        $order->update([
-            'status' => $validated['status'],
-        ]);
+        if ($validated['status'] === 'completed' && $order->status !== 'completed') {
+
+            $productionCost = 0;
+
+            $order->load('items.customizations');
+
+            foreach ($order->items as $item) {
+
+                foreach ($item->customizations as $customization) {
+
+                    $option = \App\Models\CustomizationOption::with('material')
+                        ->find($customization->customization_option_id);
+
+                    if ($option && $option->material) {
+
+                        $productionCost +=
+                            $option->material->cost_per_unit *
+                            $option->quantity_used *
+                            $item->quantity;
+                    }
+                }
+            }
+
+            $profit =
+                $order->total_price -
+                $order->shipping_cost -
+                $productionCost;
+
+            $order->update([
+                'status' => 'completed',
+                'production_cost' => $productionCost,
+                'profit' => $profit,
+            ]);
+
+        } else {
+
+            $order->update([
+                'status' => $validated['status'],
+            ]);
+        }
+        // $order->update([
+        //     'status' => $validated['status'],
+        // ]);
 
         // Send notification to customer if status changed
         if ($oldStatus !== $validated['status'] && $order->user_id) {
@@ -86,4 +129,6 @@ class OrderController extends Controller
         $order->delete();
         return redirect()->route('admin.orders.index')->with('success', 'Order deleted successfully.');
     }
+
+
 }

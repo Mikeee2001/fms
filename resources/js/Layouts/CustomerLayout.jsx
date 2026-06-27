@@ -1,6 +1,7 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import NotificationDropdown from '@/Components/NotificationDropdown';
+import { ArrowRight } from 'lucide-react';
 
 export default function CustomerLayout({ children }) {
     const { auth, cartCount: initialCartCount, url } = usePage().props;
@@ -236,6 +237,8 @@ export default function CustomerLayout({ children }) {
 
             {/* Main Content */}
             <main className="relative">{children}</main>
+
+          
 
             {/* Footer - ONLY displayed on home page (/) and products page (/products) */}
             {shouldShowFooter && (

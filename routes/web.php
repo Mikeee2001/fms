@@ -1,31 +1,34 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomizationCategoryController;
+use App\Http\Controllers\Admin\CustomizationOptionController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\DeliveryZoneController;
+use App\Http\Controllers\Admin\DeliveryZoneRequestController;
+use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
-use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
-use App\Http\Controllers\Customer\ProductController as CustomerProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
-use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\DeliveryRequestController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\ProfileController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\StockController;
-use App\Http\Controllers\Admin\MaterialController;
-use App\Http\Controllers\Admin\CustomizationOptionController;
-use App\Http\Controllers\Admin\SupplierController;
-use App\Http\Controllers\Admin\CustomizationCategoryController;
-use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Admin\DeliveryZoneController;
+use App\Http\Controllers\Delivery\DashboardController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Auth\SupplierRegisterController;
 use App\Http\Controllers\WebhookController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\DeliveryZoneRequestController;
-
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+
 
 // Public routes (no authentication required)
 Route::get('/', function () {
@@ -34,6 +37,9 @@ Route::get('/', function () {
         'phpVersion' => phpversion(),
     ]);
 })->name('home');
+
+Route::get('/supplier/register', [SupplierRegisterController::class, 'getSupplierRegistration']);
+Route::post('/supplier/register', [SupplierRegisterController::class, 'supplierRegistration'])->name('supplier.register.store');
 
 Route::get('/products', [CustomerProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product}', [CustomerProductController::class, 'show'])->name('products.show');
@@ -77,8 +83,8 @@ Route::middleware(['auth'])->group(function () {
     // Delivery request route
     Route::post('/delivery-request', [DeliveryRequestController::class, 'store'])->name('delivery-request.store');
 
-    // Dashboard redirect based on role
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // // Dashboard redirect based on role
+    // Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Customer routes
     Route::prefix('customer')->name('customer.')->group(function () {
@@ -95,15 +101,15 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-// Notification routes
-Route::post('/notifications/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])
-    ->name('notifications.mark-as-read');
-Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
-    ->name('notifications.mark-all-read');
-Route::post('/notifications/mark-and-redirect', [App\Http\Controllers\NotificationController::class, 'markAndRedirect'])
-    ->name('notifications.mark-and-redirect');
-Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'getUnreadCount'])
-    ->name('notifications.unread-count');
+    // Notification routes
+    Route::post('/notifications/mark-as-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])
+        ->name('notifications.mark-as-read');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])
+        ->name('notifications.mark-all-read');
+    Route::post('/notifications/mark-and-redirect', [App\Http\Controllers\NotificationController::class, 'markAndRedirect'])
+        ->name('notifications.mark-and-redirect');
+    Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'getUnreadCount'])
+        ->name('notifications.unread-count');
 
 
 
@@ -193,10 +199,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
 
-   Route::get('/reports/sales', [App\Http\Controllers\Admin\ReportController::class, 'salesReport'])->name('reports.sales');
+    Route::get('/reports/sales', [App\Http\Controllers\Admin\ReportController::class, 'salesReport'])->name('reports.sales');
 
 
 
+    Route::resource('staff', StaffController::class);
+
+
+});
+
+
+Route::middleware(['auth', 'delivery'])->prefix('delivery')->name('delivery.')->group(function () {
+
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('index');
 
 });
 
@@ -242,11 +257,11 @@ Route::get('/debug-ors', function () {
                 'Authorization' => $apiKey,
                 'Content-Type' => 'application/json',
             ])->post('https://api.openrouteservice.org/v2/directions/driving-car/geojson', [
-                'coordinates' => [
-                    [124.57058152076657, 8.532339288654399],
-                    [124.6, 8.5]
-                ]
-            ]);
+                        'coordinates' => [
+                            [124.57058152076657, 8.532339288654399],
+                            [124.6, 8.5]
+                        ]
+                    ]);
 
             $results['api_call_status'] = $response->status();
             $results['api_call_success'] = $response->successful();
@@ -268,4 +283,4 @@ Route::get('/debug-ors', function () {
     return response()->json($results);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

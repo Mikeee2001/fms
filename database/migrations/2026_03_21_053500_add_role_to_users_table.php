@@ -12,7 +12,7 @@ return new class extends Migration {
             // $table->boolean('is_admin')->default(false);
             // $table->boolean('is_delivery')->default(false);
             // $table->boolean('is_worker')->default(false);
-            $table->enum('role_as', ['admin', 'delivery', 'worker', 'user'])->default('user');
+            $table->enum('role_as', ['admin', 'delivery', 'manager', 'user','supplier'])->default('user');
         });
     }
 

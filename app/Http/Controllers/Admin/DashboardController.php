@@ -13,6 +13,7 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
+    
     public function index()
     {
         // Get filter parameters from request with defaults
@@ -39,35 +40,35 @@ class DashboardController extends Controller
         $comparisonData = $this->getComparisonData($period, $year, $month, $week);
 
         // Best selling products
-       // Best selling products - Only include products that still exist
-$bestSellingProducts = OrderItem::select(
-        'product_id',
-        DB::raw('SUM(quantity) as total_quantity'),
-        DB::raw('SUM(price * quantity) as total_revenue')
-    )
-    ->with('product')
-    ->whereHas('product', function($query) {
-        $query->whereNotNull('id'); // Only include order items where product still exists
-    })
-    ->groupBy('product_id')
-    ->orderBy('total_quantity', 'desc')
-    ->limit(5)
-    ->get()
-    ->map(function ($item) {
-        // Skip if product is null (safety check)
-        if (!$item->product) {
-            return null;
-        }
-        return [
-            'id' => $item->product_id,
-            'name' => $item->product->name,
-            'total_quantity' => $item->total_quantity,
-            'total_revenue' => $item->total_revenue,
-            'image' => $item->product->images->first()?->image_path ?? null,
-        ];
-    })
-    ->filter() // Remove null entries
-    ->values(); // Reindex array
+        // Best selling products - Only include products that still exist
+        $bestSellingProducts = OrderItem::select(
+            'product_id',
+            DB::raw('SUM(quantity) as total_quantity'),
+            DB::raw('SUM(price * quantity) as total_revenue')
+        )
+            ->with('product')
+            ->whereHas('product', function ($query) {
+                $query->whereNotNull('id'); // Only include order items where product still exists
+            })
+            ->groupBy('product_id')
+            ->orderBy('total_quantity', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($item) {
+                // Skip if product is null (safety check)
+                if (!$item->product) {
+                    return null;
+                }
+                return [
+                    'id' => $item->product_id,
+                    'name' => $item->product->name,
+                    'total_quantity' => $item->total_quantity,
+                    'total_revenue' => $item->total_revenue,
+                    'image' => $item->product->images->first()?->image_path ?? null,
+                ];
+            })
+            ->filter() // Remove null entries
+            ->values(); // Reindex array
 
         // Low stock products
         $lowStockProducts = Product::with('inventory', 'images', 'sizes')

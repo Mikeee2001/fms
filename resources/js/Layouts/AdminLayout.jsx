@@ -105,11 +105,11 @@ export default function AdminLayout({ children }) {
             ]
         },
         {
-            title: 'User Management',
+            title: 'Staff Management',
             items: [
                 {
-                    name: 'Users',
-                    href: '/admin/users',
+                    name: 'Staff',
+                    href: '/admin/staff',
                     icon: 'M17 20h5v-2a4 4 0 00-5.356-3.772M9 20H4v-2a4 4 0 015.356-3.772M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
                 },
             ]

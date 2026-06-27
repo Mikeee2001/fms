@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import QuickViewModal from './QuickViewModal';
 
 export default function ProductCard({ product, viewMode = 'grid' }) {
     const [isHovered, setIsHovered] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [quickViewOpen, setQuickViewOpen] = useState(false);
+    const { auth } = usePage().props;
+    const user = auth?.user;
 
     const imageUrl = product.first_image_url || (product.images && product.images[0] ? `/storage/${product.images[0].image_path}` : null);
     const isInStock = product.inventory?.stock > 0 || (product.sizes && product.sizes.some(s => s.stock > 0));
@@ -16,6 +18,32 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
             return options[0].category_name;
         }
         return 'Options';
+    };
+
+    const handleBuyNow = () => {
+        if (!user) {
+            setShowLoginPrompt(true);
+            return;
+        }
+
+        router.post(
+            route('cart.add', product.id),
+            {
+                quantity: 1,
+                customizations: {},
+            },
+            {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    router.visit(route('cart.index'));
+                },
+
+                onError: (errors) => {
+                    console.error(errors);
+                }
+            }
+        );
     };
 
     if (viewMode === 'list') {
@@ -135,9 +163,8 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
                         <img
                             src={imageUrl}
                             alt={product.name}
-                            className={`w-full h-full object-cover transition-all duration-500 ${
-                                isHovered ? 'scale-105' : 'scale-100'
-                            } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                            className={`w-full h-full object-cover transition-all duration-500 ${isHovered ? 'scale-105' : 'scale-100'
+                                } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                             onLoad={() => setImageLoaded(true)}
                             loading="lazy"
                         />
@@ -155,9 +182,8 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
                         )}
                     </div>
 
-                    <div className={`absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity duration-300 ${
-                        isHovered ? 'opacity-100' : 'opacity-0'
-                    }`}>
+                    <div className={`absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'
+                        }`}>
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
@@ -231,12 +257,23 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
                     </div>
 
                     <div className="mt-4 flex gap-2">
-                        <Link
-                            href={`/products/${product.id}`}
-                            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-all duration-300"
-                        >
-                            <span>View Details</span>
-                        </Link>
+
+                        {user ? (
+                            <button
+                                onClick={handleBuyNow}
+                                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-300"
+                            >
+                                Buy Now
+                            </button>
+                        ) : (
+                            <Link
+                                href={`/products/${product.id}`}
+                                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 rounded-lg hover:bg-stone-200 transition-all duration-300"
+                            >
+                                View Details
+                            </Link>
+                        )}
+
                         <button
                             onClick={() => setQuickViewOpen(true)}
                             className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-300"
@@ -246,6 +283,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                         </button>
+
                     </div>
                 </div>
             </div>

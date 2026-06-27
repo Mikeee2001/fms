@@ -44,8 +44,8 @@ export default function Index({ orders, stats }) {
 
     const filteredOrders = orders.data.filter(order => {
         const matchesSearch = order.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             order.customer_email?.toLowerCase().includes(searchTerm.toLowerCase());
+            order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            order.customer_email?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
@@ -55,23 +55,23 @@ export default function Index({ orders, stats }) {
             <Head title="Orders Management" />
 
             <div className="py-6">
-               <div className="mb-6"> section
-<div className="flex justify-between items-center mb-6">
-    <div>
-        <h1 className="text-2xl font-semibold text-white">Orders Management</h1>
-        <p className="text-stone-400 mt-1">Manage and track customer orders</p>
-    </div>
-    <a
-        href={route('admin.reports.sales')}
-        target="_blank"
-        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
-    >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        Export Sales Report PDF
-    </a>
-</div>
+                <div className="mb-6"> section
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h1 className="text-2xl font-semibold text-white">Orders Management</h1>
+                            <p className="text-stone-400 mt-1">Manage and track customer orders</p>
+                        </div>
+                        <a
+                            href={route('admin.reports.sales')}
+                            target="_blank"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md transition-colors flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Export Sales Report PDF
+                        </a>
+                    </div>
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
@@ -101,11 +101,28 @@ export default function Index({ orders, stats }) {
                         </div>
                     </div>
 
-                    {/* Revenue Card Separate */}
+                    {/* Revenue Card Separate
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="bg-black border border-stone-800 rounded-lg p-4 md:col-span-3">
                             <p className="text-stone-400 text-sm">Total Revenue</p>
                             <p className="text-2xl font-bold text-amber-400">₱{formatCurrency(stats.total_revenue)}</p>
+                        </div>
+                    </div> */}
+
+                    {/* Revenue Total Profit Separate */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div className="bg-black border border-stone-800 rounded-lg p-4">
+                            <p className="text-stone-400 text-sm">Total Revenue</p>
+                            <p className="text-2xl font-bold text-amber-400">
+                                ₱{formatCurrency(stats.total_revenue)}
+                            </p>
+                        </div>
+
+                        <div className="bg-black border border-stone-800 rounded-lg p-4">
+                            <p className="text-stone-400 text-sm">Total Profit</p>
+                            <p className="text-2xl font-bold text-emerald-400">
+                                ₱{formatCurrency(stats.total_profit)}
+                            </p>
                         </div>
                     </div>
 
@@ -114,61 +131,55 @@ export default function Index({ orders, stats }) {
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => setStatusFilter('all')}
-                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                                    statusFilter === 'all'
-                                        ? 'bg-amber-600 text-white'
-                                        : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                }`}
+                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${statusFilter === 'all'
+                                    ? 'bg-amber-600 text-white'
+                                    : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                    }`}
                             >
                                 All
                             </button>
                             <button
                                 onClick={() => setStatusFilter('pending')}
-                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                                    statusFilter === 'pending'
-                                        ? 'bg-yellow-600 text-white'
-                                        : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                }`}
+                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${statusFilter === 'pending'
+                                    ? 'bg-yellow-600 text-white'
+                                    : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                    }`}
                             >
                                 Pending
                             </button>
                             <button
                                 onClick={() => setStatusFilter('processing')}
-                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                                    statusFilter === 'processing'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                }`}
+                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${statusFilter === 'processing'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                    }`}
                             >
                                 Processing
                             </button>
                             <button
                                 onClick={() => setStatusFilter('shipped')}
-                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                                    statusFilter === 'shipped'
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                }`}
+                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${statusFilter === 'shipped'
+                                    ? 'bg-indigo-600 text-white'
+                                    : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                    }`}
                             >
                                 Shipped
                             </button>
                             <button
                                 onClick={() => setStatusFilter('completed')}
-                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                                    statusFilter === 'completed'
-                                        ? 'bg-emerald-600 text-white'
-                                        : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                }`}
+                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${statusFilter === 'completed'
+                                    ? 'bg-emerald-600 text-white'
+                                    : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                    }`}
                             >
                                 Completed
                             </button>
                             <button
                                 onClick={() => setStatusFilter('cancelled')}
-                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                                    statusFilter === 'cancelled'
-                                        ? 'bg-red-600 text-white'
-                                        : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
-                                }`}
+                                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${statusFilter === 'cancelled'
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                    }`}
                             >
                                 Cancelled
                             </button>
@@ -274,11 +285,10 @@ export default function Index({ orders, stats }) {
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
-                                            className={`px-3 py-2 rounded text-sm transition-colors ${
-                                                link.active
-                                                    ? 'bg-amber-600 text-white'
-                                                    : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
-                                            } ${!link.url && 'opacity-50 cursor-not-allowed'}`}
+                                            className={`px-3 py-2 rounded text-sm transition-colors ${link.active
+                                                ? 'bg-amber-600 text-white'
+                                                : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
+                                                } ${!link.url && 'opacity-50 cursor-not-allowed'}`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
                                     ))}

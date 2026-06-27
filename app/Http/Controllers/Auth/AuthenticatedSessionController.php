@@ -21,7 +21,7 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
-            'redirect' => $request->get('redirect', route('dashboard')),
+            'redirect' => $request->get('redirect', route('customer.dashboard')),
         ]);
     }
 
@@ -34,10 +34,40 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Get the redirect URL from the request
-        $redirect = $request->input('redirect', route('dashboard'));
+        $user = Auth::user();
 
-        return redirect()->intended($redirect);
+        // Prevent inactive suppliers from logging in
+        if (
+            $user->role_as === 'supplier' &&
+            $user->supplier &&
+            $user->supplier->status !== 'active'
+        ) {
+            Auth::logout();
+
+            return redirect()
+                ->route('login')
+                ->withErrors([
+                    'email' => 'Your supplier account is still awaiting admin approval.',
+                ]);
+        }
+
+        switch ($user->role_as) {
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+
+            case 'manager':
+                return redirect()->route('manager.dashboard');
+
+            case 'supplier':
+                return redirect()->route('supplier.dashboard');
+
+            case 'delivery_personnel':
+                return redirect()->route('delivery.dashboard');
+
+            case 'customer':
+            default:
+                return redirect()->route('customer.dashboard');
+        }
     }
 
     /**
