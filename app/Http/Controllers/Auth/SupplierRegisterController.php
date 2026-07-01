@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Supplier;
-use App\Models\SupplierCategory;
 use App\Models\User;
 use App\Notifications\SupplierRegistrationNotification;
 use Illuminate\Http\Request;
@@ -33,12 +32,16 @@ class SupplierRegisterController extends Controller
             'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'company_name' => 'required|string|max:255',
             'contact_person' => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:50',
+            'contact_number' => [
+                'required',
+                'regex:/^9\d{9}$/'
+            ],
             'email' => 'required|email|unique:users,email|max:255',
             'address' => 'nullable|string',
             'password' => 'required|min:8|confirmed',
-            'categories' => ['required', 'array'],
-            'categories.*' => ['string'],
+            [
+                'email.unique' => 'This email address is already registered.',
+            ]
         ]);
 
         DB::transaction(function () use ($request, $validated) {
@@ -59,20 +62,19 @@ class SupplierRegisterController extends Controller
 
             $supplier = Supplier::create([
                 'user_id' => $user->id,
-                'company_logo' => $validated['contact_person'] ?? null,
+                'company_logo' => $logoPath,
                 'company_name' => $validated['company_name'],
                 'contact_person' => $validated['contact_person'] ?? null,
-                'contact_number' => $validated['contact_number'] ?? null,
+                'contact_number' => '+63' . $validated['contact_number'],
                 'address' => $validated['address'] ?? null,
                 'status' => 'inactive',
             ]);
 
-            $categoryIds = SupplierCategory::whereIn(
-                'name',
-                $validated['categories']
-            )->pluck('id');
-
-            $supplier->categories()->attach($categoryIds);
+            /*
+            |--------------------------------------------------------------------------
+            | Notify Admins
+            |--------------------------------------------------------------------------
+            */
 
             $admins = User::where('role_as', 'admin')->get();
 
@@ -89,4 +91,6 @@ class SupplierRegisterController extends Controller
                 'Registration successful! Your supplier account is pending approval from the administrator. Please wait for approval before logging in.'
             );
     }
+
+
 }

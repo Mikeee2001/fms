@@ -21,7 +21,7 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
-            'redirect' => $request->get('redirect', route('customer.dashboard')),
+
         ]);
     }
 
@@ -36,21 +36,6 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        // Prevent inactive suppliers from logging in
-        if (
-            $user->role_as === 'supplier' &&
-            $user->supplier &&
-            $user->supplier->status !== 'active'
-        ) {
-            Auth::logout();
-
-            return redirect()
-                ->route('login')
-                ->withErrors([
-                    'email' => 'Your supplier account is still awaiting admin approval.',
-                ]);
-        }
-
         switch ($user->role_as) {
             case 'admin':
                 return redirect()->route('admin.dashboard');
@@ -61,12 +46,11 @@ class AuthenticatedSessionController extends Controller
             case 'supplier':
                 return redirect()->route('supplier.dashboard');
 
-            case 'delivery_personnel':
+            case 'delivery':
                 return redirect()->route('delivery.dashboard');
 
-            case 'customer':
             default:
-                return redirect()->route('customer.dashboard');
+                abort(403, 'Invalid user role');
         }
     }
 

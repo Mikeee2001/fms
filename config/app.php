@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'ARFEELS LUMBER TRADING'),
 
     'store_location' => [
     'latitude' => env('STORE_LATITUDE', 8.532339288654399),

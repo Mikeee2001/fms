@@ -1,122 +1,88 @@
 import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Dialog } from 'primereact/dialog';
 import { confirmDialog } from 'primereact/confirmdialog';
 import { useToast } from '@/Contexts/ToastContext';
+import {
+    HiEye,
+    HiTrash,
+    HiRefresh,
+} from "react-icons/hi";
 
-export default function Index({ suppliers }) {
+export default function Index({ suppliers, filters }) {
     const { showToast } = useToast();
-    const [modalOpen, setModalOpen] = useState(false);
-    const [editingSupplier, setEditingSupplier] = useState(null);
-    const [formData, setFormData] = useState({
-        name: '',
-        contact_person: '',
-        contact_number: '',
-        address: '',
-        is_active: true,
-    });
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
+    const [supplierStatus, setSupplierStatus] = useState(filters?.status || 'all');
 
-    const resetForm = () => {
-        setFormData({
-            name: '',
-            contact_person: '',
-            contact_number: '',
-            address: '',
-            is_active: true,
-        });
-        setEditingSupplier(null);
-        setErrors({});
-    };
-
-    const openCreateModal = () => {
-        resetForm();
-        setModalOpen(true);
-    };
-
-    const openEditModal = (supplier) => {
-        setEditingSupplier(supplier);
-        setFormData({
-            name: supplier.name,
-            contact_person: supplier.contact_person || '',
-            contact_number: supplier.contact_number || '',
-            address: supplier.address || '',
-            is_active: supplier.is_active,
-        });
-        setModalOpen(true);
-    };
-
-    const handleSubmit = () => {
-        setIsSubmitting(true);
-        setErrors({});
-
-        const url = editingSupplier
-            ? route('admin.suppliers.update', editingSupplier.id)
-            : route('admin.suppliers.store');
-
-        const method = editingSupplier ? 'put' : 'post';
-
-        router[method](url, formData, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setIsSubmitting(false);
-                setModalOpen(false);
-                resetForm();
-                showToast('success', 'Success', editingSupplier ? 'Supplier updated.' : 'Supplier created.');
-                router.reload();
-            },
-            onError: (errors) => {
-                setIsSubmitting(false);
-                if (errors.response?.data?.errors) {
-                    setErrors(errors.response.data.errors);
-                } else {
-                    showToast('error', 'Error', 'Failed to save supplier.');
-                }
-            },
-        });
-    };
-
-    const confirmDelete = (supplier) => {
+    const archived = (supplier) => {
         confirmDialog({
-            header: 'Delete Supplier',
-            message: `Are you sure you want to delete "${supplier.name}"?`,
-            icon: 'pi pi-exclamation-triangle',
-            acceptClassName: 'p-button-danger',
-            rejectClassName: 'p-button-secondary',
+            header: "Archive Supplier",
+            message: `Archive "${supplier.company_name}"?`,
+            icon: "pi pi-exclamation-triangle",
+            acceptClassName: "p-button-warning",
+            rejectClassName: "p-button-secondary",
+
             accept: () => {
-                router.delete(route('admin.suppliers.destroy', supplier.id), {
+                router.delete(route("admin.suppliers.archive", supplier.id), {
                     preserveScroll: true,
                     onSuccess: () => {
-                        showToast('success', 'Deleted', 'Supplier deleted successfully.');
-                        router.reload();
-                    },
-                    onError: () => {
-                        showToast('error', 'Error', 'Failed to delete supplier.');
+                        showToast(
+                            "success",
+                            "Archived",
+                            "Supplier moved to archive."
+                        );
                     },
                 });
             },
         });
     };
 
-    const modalFooter = () => (
-        <div className="flex justify-end gap-2">
-            <button
-                onClick={() => setModalOpen(false)}
-                className="px-4 py-2 border border-stone-700 rounded-md text-stone-300 hover:bg-stone-900"
-            >
-                Cancel
-            </button>
-            <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 disabled:opacity-50"
-            >
-                {isSubmitting ? 'Saving...' : editingSupplier ? 'Update' : 'Create'}
-            </button>
-        </div>
-    );
+
+    const confirmDelete = (supplier) => {
+        confirmDialog({
+            header: "Delete Supplier",
+            message: `Delete "${supplier.company_name}"?`,
+            icon: "pi pi-exclamation-triangle",
+            acceptClassName: "p-button-warning",
+            rejectClassName: "p-button-secondary",
+
+            accept: () => {
+                router.delete(route("admin.suppliers.forceDelete", supplier.id), {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        showToast(
+                            "success",
+                            "Deleted",
+                            "Supplier deleted successfully."
+                        );
+                    },
+                });
+            },
+        });
+    };
+
+    const restoreSupplier = (id) => {
+        router.post(route('admin.suppliers.restore', id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showToast('success', 'Restored', 'Supplier restored successfully.');
+            },
+        });
+    };
+
+
+    const filterSuppliers = (status) => {
+        setSupplierStatus(status);
+
+        router.get(route('admin.suppliers.index'), { status }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            only: ['suppliers', 'filters'],
+        });
+    };
 
     return (
         <AdminLayout>
@@ -129,12 +95,54 @@ export default function Index({ suppliers }) {
                             <h1 className="text-2xl font-semibold text-white">Suppliers</h1>
                             <p className="text-stone-400 mt-1">Manage your material suppliers</p>
                         </div>
+                    </div>
+
+                    <div className="mb-6 flex flex-wrap gap-2">
+
+                        {/* ALL */}
                         <button
-                            onClick={openCreateModal}
-                            className="bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700 transition-colors"
+                            onClick={() => filterSuppliers('all')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${supplierStatus === 'all'
+                                ? 'bg-amber-600 text-white'
+                                : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                }`}
                         >
-                            Add New Supplier
+                            All
                         </button>
+
+                        {/* ACTIVE */}
+                        <button
+                            onClick={() => filterSuppliers('active')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${supplierStatus === 'active'
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                }`}
+                        >
+                            Active
+                        </button>
+
+                        {/* INACTIVE */}
+                        <button
+                            onClick={() => filterSuppliers('inactive')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${supplierStatus === 'inactive'
+                                ? 'bg-red-600 text-white'
+                                : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                }`}
+                        >
+                            Inactive
+                        </button>
+
+                        {/* ARCHIVED (SOFT DELETED) */}
+                        <button
+                            onClick={() => filterSuppliers('archived')}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${supplierStatus === 'archived'
+                                ? 'bg-stone-500 text-white'
+                                : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                                }`}
+                        >
+                            Archived
+                        </button>
+
                     </div>
 
                     <div className="bg-black border border-stone-800 rounded-lg overflow-hidden">
@@ -142,56 +150,148 @@ export default function Index({ suppliers }) {
                             <table className="min-w-full divide-y divide-stone-800">
                                 <thead className="bg-stone-900">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Supplier</th>
+                                        {/* <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">No.</th> */}
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Company Logo</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Company Name</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Contact Person</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Contact Number</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Materials</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Status</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-stone-400">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-stone-800">
-                                    {suppliers.data.map((supplier) => (
+                                    {suppliers.data.map((supplier, index) => (
                                         <tr key={supplier.id} className="hover:bg-stone-900/50">
+                                            {/* No.
+                                            <td className="px-6 py-4 text-sm text-stone-300">
+                                                {(suppliers.current_page - 1) * suppliers.per_page + index + 1}
+                                            </td> */}
+
+                                            {/* Company Logo */}
                                             <td className="px-6 py-4">
-                                                <div className="text-sm font-medium text-white">{supplier.name}</div>
-                                                {supplier.address && (
-                                                    <div className="text-xs text-stone-500 mt-1">{supplier.address}</div>
+                                                {supplier.company_logo ? (
+                                                    <img
+                                                        src={`/storage/${supplier.company_logo}`}
+                                                        alt={supplier.company_name}
+                                                        className="w-12 h-12 rounded object-cover border border-stone-700"
+                                                    />
+                                                ) : (
+                                                    <div className="w-12 h-12 rounded bg-stone-800 flex items-center justify-center text-xs text-stone-500">
+                                                        No Logo
+                                                    </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-stone-300">
-                                                {supplier.contact_person || '—'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-stone-300">
-                                                {supplier.contact_number || '—'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-stone-300">
-                                                <span className="px-2 py-1 bg-stone-800 rounded-full text-xs">
-                                                    {supplier.materials_count || 0}
-                                                </span>
-                                            </td>
+
+                                            {/* Company Name, Person, Number */}
+                                            <td className="px-6 py-4 text-white font-medium">{supplier.company_name}</td>
+                                            <td className="px-6 py-4 text-stone-300">{supplier.contact_person ?? "—"}</td>
+                                            <td className="px-6 py-4 text-stone-300">{supplier.contact_number ?? "—"}</td>
+
+                                            {/* Unified Status Dropdown */}
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 text-xs rounded-full ${
-                                                    supplier.is_active
-                                                        ? 'bg-emerald-900/30 text-emerald-400 border border-emerald-700'
-                                                        : 'bg-red-900/30 text-red-400 border border-red-700'
-                                                }`}>
-                                                    {supplier.is_active ? 'Active' : 'Inactive'}
-                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newStatus =
+                                                            supplier.status === "active" ? "inactive" : "active";
+
+                                                        router.put(
+                                                            route("admin.suppliers.update-status", supplier.id),
+                                                            {
+                                                                status: newStatus,
+                                                            },
+                                                            {
+                                                                preserveScroll: true,
+                                                                preserveState: true,
+                                                                onSuccess: () => {
+                                                                    supplier.status = newStatus;
+
+                                                                    showToast(
+                                                                        "success",
+                                                                        "Status Updated",
+                                                                        `${supplier.company_name} is now ${newStatus}.`
+                                                                    );
+                                                                },
+                                                                onError: () => {
+                                                                    showToast(
+                                                                        "error",
+                                                                        "Update Failed",
+                                                                        "Unable to update supplier status."
+                                                                    );
+                                                                },
+                                                            }
+                                                        );
+                                                    }}
+                                                    className={`relative inline-flex h-7 w-20 items-center rounded-full transition-colors duration-300 ${supplier.status === "active"
+                                                        ? "bg-green-500"
+                                                        : "bg-red-500"
+                                                        }`}
+                                                >
+                                                    {/* Circle */}
+                                                    <span
+                                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${supplier.status === "active"
+                                                            ? "translate-x-14"
+                                                            : "translate-x-1"
+                                                            }`}
+                                                    />
+
+                                                    {/* Text */}
+                                                    <span
+                                                        className={`absolute text-[11px] font-semibold text-white ${supplier.status === "active"
+                                                            ? "left-2"
+                                                            : "right-2"
+                                                            }`}
+                                                    >
+                                                        {supplier.status === "active" ? "Active" : "Inactive"}
+                                                    </span>
+                                                </button>
                                             </td>
-                                            <td className="px-6 py-4 text-sm space-x-2">
-                                                <button
-                                                    onClick={() => openEditModal(supplier)}
-                                                    className="text-amber-500 hover:text-amber-400"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => confirmDelete(supplier)}
-                                                    className="text-red-500 hover:text-red-400"
-                                                >
-                                                    Delete
-                                                </button>
+
+                                            {/* Actions */}
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-3">
+
+                                                    {/* View */}
+                                                    <button
+                                                        onClick={() => openViewModal(supplier)}
+                                                        className="text-blue-500 hover:text-blue-400"
+                                                        title="View"
+                                                    >
+                                                        <HiEye className="w-5 h-5" />
+                                                    </button>
+
+                                                    {supplierStatus === "archived" ? (
+                                                        <>
+                                                            {/* Restore */}
+                                                            <button
+                                                                onClick={() => restoreSupplier(supplier.id)}
+                                                                className="text-green-500 hover:text-green-400"
+                                                                title="Restore"
+                                                            >
+                                                                <HiRefresh className="w-5 h-5" />
+                                                            </button>
+
+                                                            {/* Permanent Delete */}
+                                                            <button
+                                                                onClick={() => confirmDelete(supplier)}
+                                                                className="text-red-600 hover:text-red-500"
+                                                                title="Delete Permanently"
+                                                            >
+                                                                <HiTrash className="w-5 h-5" />
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        /* Archive */
+                                                        <button
+                                                            onClick={() => archived(supplier)}
+                                                            className="text-yellow-500 hover:text-yellow-400"
+                                                            title="Archive"
+                                                        >
+                                                            <HiTrash className="w-5 h-5" />
+                                                        </button>
+                                                    )}
+
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -207,11 +307,10 @@ export default function Index({ suppliers }) {
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
-                                            className={`px-3 py-2 rounded text-sm transition-colors ${
-                                                link.active
-                                                    ? 'bg-amber-600 text-white'
-                                                    : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
-                                            } ${!link.url && 'opacity-50 cursor-not-allowed'}`}
+                                            className={`px-3 py-2 rounded text-sm transition-colors ${link.active
+                                                ? 'bg-amber-600 text-white'
+                                                : 'bg-stone-900 text-stone-300 hover:bg-stone-800'
+                                                } ${!link.url && 'opacity-50 cursor-not-allowed'}`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
                                     ))}
@@ -222,85 +321,7 @@ export default function Index({ suppliers }) {
                 </div>
             </div>
 
-            {/* Create/Edit Supplier Modal */}
-            <Dialog
-                header={editingSupplier ? 'Edit Supplier' : 'Add New Supplier'}
-                visible={modalOpen}
-                style={{ width: '500px' }}
-                onHide={() => {
-                    setModalOpen(false);
-                    resetForm();
-                }}
-                footer={modalFooter}
-                className="bg-black border border-stone-800 rounded-lg"
-            >
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-1">
-                            Supplier Name *
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full rounded-md bg-stone-900 border-stone-700 text-white focus:border-amber-500 focus:ring-amber-500"
-                            placeholder="e.g., ABC Leather Supplies"
-                        />
-                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-1">
-                            Contact Person
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.contact_person}
-                            onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                            className="w-full rounded-md bg-stone-900 border-stone-700 text-white focus:border-amber-500 focus:ring-amber-500"
-                            placeholder="Contact person name"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-1">
-                            Contact Number
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.contact_number}
-                            onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
-                            className="w-full rounded-md bg-stone-900 border-stone-700 text-white focus:border-amber-500 focus:ring-amber-500"
-                            placeholder="Phone or mobile number"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-stone-400 mb-1">
-                            Address
-                        </label>
-                        <textarea
-                            value={formData.address}
-                            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                            rows="2"
-                            className="w-full rounded-md bg-stone-900 border-stone-700 text-white focus:border-amber-500 focus:ring-amber-500"
-                            placeholder="Supplier address"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="flex items-center">
-                            <input
-                                type="checkbox"
-                                checked={formData.is_active}
-                                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                                className="rounded bg-stone-900 border-stone-700 text-amber-600 focus:ring-amber-500"
-                            />
-                            <span className="ml-2 text-sm text-stone-300">Active</span>
-                        </label>
-                    </div>
-                </div>
-            </Dialog>
         </AdminLayout>
     );
 }

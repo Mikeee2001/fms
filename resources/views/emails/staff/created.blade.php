@@ -166,7 +166,7 @@
             <tr>
                 <td class="header">
                     <span style="color: #d97706; font-weight: 800; font-size: 18px; letter-spacing: 0.05em;">
-                        {{ config('app.name') }}
+                        Arfeels Furniture Trading
                     </span>
                 </td>
             </tr>
@@ -190,10 +190,9 @@
                             <span class="label">Email Handle</span>
                             <span class="value">{{ $user->email }}</span>
                         </div>
-                        <div class="data-row">
-                            <span class="label">Random Password</span>
-                            <span class="value"><code class="code-token">{{ $password }}</code></span>
-                        </div>
+                        {{-- <a href="{{ $setupLink }}" class="action-button">
+                            Set Your Password
+                        </a> --}}
                     </div>
 
                     <p class="paragraph" style="font-size: 13px; color: #78716c;">
@@ -203,7 +202,7 @@
                     </p>
 
                     <div class="btn-container">
-                        <a href="{{ url('/login') }}" class="action-button" target="_blank">Authenticate Account</a>
+                        <a href="{{ $setupLink }}" class="action-button" target="_blank">Authenticate Account</a>
                     </div>
                 </td>
             </tr>
@@ -211,7 +210,8 @@
             <!-- Footer Block -->
             <tr>
                 <td class="footer">
-                    &copy; {{ date('Y') }} {{ config('app.name') }}. All workspace parameters active.<br>
+                    &copy; {{ date('Y') }} Arfeels Furniture Trading
+                    . All workspace parameters active.<br>
                     <span style="display:inline-block; margin-top:8px;">Do not reply directly to this automated
                         structural transmission.</span>
                 </td>

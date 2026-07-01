@@ -16,7 +16,7 @@ class MaterialController extends Controller
 {
     public function index()
     {
-        $materials = Material::orderBy('name')
+        $materials = Material::orderBy('material_name')
             ->paginate(20);
 
         $lowStockCount = Material::where('stock', '<=', DB::raw('minimum_stock'))->count();

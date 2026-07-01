@@ -13,7 +13,7 @@ export default function DeliveryLayout({ children }) {
     const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
     // Fetch pending delivery requests count for badge
-    useEffect(() => {
+    // useEffect(() => {
         // if (user?.is_admin) {
         //     const fetchPendingCount = async () => {
         //         try {
@@ -30,22 +30,22 @@ export default function DeliveryLayout({ children }) {
         //     const interval = setInterval(fetchPendingCount, 30000);
         //     return () => clearInterval(interval);
         // }
-        if (user?.role_as === 'admin') {
-            const fetchPendingCount = async () => {
-                try {
-                    const response = await axios.get(route('admin.delivery-requests.stats'));
-                    setPendingRequestsCount(response.data.pending_count);
-                } catch (error) {
-                    console.error('Failed to fetch pending requests:', error);
-                }
-            };
+    //     if (user?.role_as === 'admin') {
+    //         const fetchPendingCount = async () => {
+    //             try {
+    //                 const response = await axios.get(route('admin.delivery-requests.stats'));
+    //                 setPendingRequestsCount(response.data.pending_count);
+    //             } catch (error) {
+    //                 console.error('Failed to fetch pending requests:', error);
+    //             }
+    //         };
 
-            fetchPendingCount();
+    //         fetchPendingCount();
 
-            const interval = setInterval(fetchPendingCount, 30000);
-            return () => clearInterval(interval);
-        }
-    }, [user]);
+    //         const interval = setInterval(fetchPendingCount, 30000);
+    //         return () => clearInterval(interval);
+    //     }
+    // }, [user]);
 
 
     // Auto-refresh notifications every 30 seconds

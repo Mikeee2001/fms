@@ -8,9 +8,6 @@ export default function Create() {
         name: '',
         email: '',
         role_as: 'admin',
-        specification: '',
-        vehicle_type: '',
-        plate_number: '',
     });
 
     const submit = (e) => {
@@ -55,28 +52,6 @@ export default function Create() {
                                     <option value="delivery">Delivery Personnel</option>
                                 </select>
                             </div>
-
-                            {/* Conditional Manager Fields */}
-                            {data.role_as === 'manager' && (
-                                <div className="col-span-2 border-t border-stone-800 pt-6 mt-2">
-                                    <label className="block text-xs font-semibold uppercase text-stone-500 mb-2">Manager Specification</label>
-                                    <input type="text" value={data.specification} onChange={e => setData('specification', e.target.value)} placeholder="e.g. Operations Lead" className="w-full bg-black border border-stone-800 rounded-md p-2.5 text-white" />
-                                </div>
-                            )}
-
-                            {/* Conditional Delivery Fields */}
-                            {data.role_as === 'delivery' && (
-                                <div className="col-span-2 md:col-span-1 border-t border-stone-800 pt-6 mt-2">
-                                    <label className="block text-xs font-semibold uppercase text-stone-500 mb-2">Vehicle Type</label>
-                                    <input type="text" value={data.vehicle_type} onChange={e => setData('vehicle_type', e.target.value)} placeholder="e.g. Mulit-cab" className="w-full bg-black border border-stone-800 rounded-md p-2.5 text-white" />
-                                </div>
-                            )}
-                            {data.role_as === 'delivery' && (
-                                <div className="col-span-2 md:col-span-1 border-t border-stone-800 pt-6 mt-2">
-                                    <label className="block text-xs font-semibold uppercase text-stone-500 mb-2">Plate Number</label>
-                                    <input type="text" value={data.plate_number} onChange={e => setData('plate_number', e.target.value)} placeholder="ABC-123" className="w-full bg-black border border-stone-800 rounded-md p-2.5 text-white" />
-                                </div>
-                            )}
 
                         </div>
 

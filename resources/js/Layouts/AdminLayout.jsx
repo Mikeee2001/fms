@@ -14,22 +14,6 @@ export default function AdminLayout({ children }) {
 
     // Fetch pending delivery requests count for badge
     useEffect(() => {
-        // if (user?.is_admin) {
-        //     const fetchPendingCount = async () => {
-        //         try {
-        //             const response = await axios.get(route('admin.delivery-requests.stats'));
-        //             setPendingRequestsCount(response.data.pending_count);
-        //         } catch (error) {
-        //             console.error('Failed to fetch pending requests:', error);
-        //         }
-        //     };
-
-        //     fetchPendingCount();
-
-        //     // Refresh every 30 seconds
-        //     const interval = setInterval(fetchPendingCount, 30000);
-        //     return () => clearInterval(interval);
-        // }
         if (user?.role_as === 'admin') {
             const fetchPendingCount = async () => {
                 try {
@@ -42,9 +26,25 @@ export default function AdminLayout({ children }) {
 
             fetchPendingCount();
 
+            // Refresh every 30 seconds
             const interval = setInterval(fetchPendingCount, 30000);
             return () => clearInterval(interval);
         }
+        // if (user?.role_as === 'admin') {
+        //     const fetchPendingCount = async () => {
+        //         try {
+        //             const response = await axios.get(route('admin.delivery-requests.stats'));
+        //             setPendingRequestsCount(response.data.pending_count);
+        //         } catch (error) {
+        //             console.error('Failed to fetch pending requests:', error);
+        //         }
+        //     };
+
+        //     fetchPendingCount();
+
+        //     const interval = setInterval(fetchPendingCount, 30000);
+        //     return () => clearInterval(interval);
+        // }
     }, [user]);
 
 

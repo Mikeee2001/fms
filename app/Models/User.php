@@ -4,7 +4,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Cart;
-use App\Models\DeliveryPersonnel;
 use App\Models\Manager;
 use App\Models\MaterialStockLog;
 use App\Models\Order;
@@ -122,14 +121,6 @@ class User extends Authenticatable
         return $this->hasOne(Manager::class, 'user_id');
     }
 
-    /**
-     * Get the delivery personnel profile associated with the user.
-     */
-    public function deliveryPersonnel()
-    {
-        // Assumes delivery_personnels table has a user_id foreign key
-        return $this->hasOne(DeliveryPersonnel::class, 'user_id');
-    }
 
     /**
      * Get the supplier profile associated with the user.

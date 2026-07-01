@@ -10,31 +10,30 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('category_supplier', function (Blueprint $table) {
+        Schema::create('goods_receipt_items', function (Blueprint $table) {
+
             $table->id();
 
-            $table->foreignId('supplier_id')
+            $table->foreignId('goods_receipt_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->foreignId('supplier_category_id')
+            $table->foreignId('material_id')
                 ->constrained()
                 ->cascadeOnDelete();
+
+            $table->decimal('quantity_received', 10, 2);
 
             $table->timestamps();
+
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('category_supplier');
+        Schema::dropIfExists('goods_receipt_items');
     }
-
-    // /**
-    //  * Reverse the migrations.
-    //  */
-    // public function down(): void
-    // {
-    //     Schema::dropIfExists('category_supplier');
-    // }
 };

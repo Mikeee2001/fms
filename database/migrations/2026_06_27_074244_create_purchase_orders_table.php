@@ -4,41 +4,42 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
-    $table->id();
 
-    $table->foreignId('supplier_id')
-        ->constrained('suppliers')
-        ->cascadeOnDelete();
+            $table->id();
 
-    $table->foreignId('manager_id')
-        ->constrained('managers')
-        ->cascadeOnDelete();
+            $table->foreignId('supplier_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
-    $table->string('po_number')->unique();
+            $table->foreignId('manager_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
-    $table->date('order_date');
+            $table->string('po_number')->unique();
 
-    $table->enum('status', [
-        'pending',
-        'approved',
-        'completed',
-        'cancelled'
-    ])->default('pending');
+            $table->date('order_date');
 
-    $table->decimal('total_amount', 12, 2)->default(0);
+            $table->enum('status', [
+                'pending',
+                'approved',
+                'received',
+                'cancelled'
+            ])->default('pending');
 
-    $table->text('notes')->nullable();
+            $table->decimal('total_amount', 12, 2)->default(0);
 
-    $table->timestamps();
-});
+            $table->text('notes')->nullable();
+
+            $table->timestamps();
+
+        });
     }
 
     /**

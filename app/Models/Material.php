@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\CustomizationOption;
+use App\Models\MaterialStockLog;
+use App\Models\RawMaterialCategory;
+use App\Models\Supplier;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,16 +17,18 @@ class Material extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name',
+        'supplier_id',
+        'raw_material_category_id',
+        'material_name',
         'slug',
-        'unit',
+        'unit_id',
         'stock',
         'minimum_stock',
-        'supplier_id',
-        'cost_per_unit',
-        'description',
+        'purchase_price',
         'is_active',
     ];
+
+
 
     protected $casts = [
         'stock' => 'decimal:2',
@@ -64,4 +71,21 @@ class Material extends Model
             return ['status' => 'in_stock', 'label' => 'In Stock', 'color' => 'green'];
         }
     }
+
+    public function category()
+    {
+        return $this->belongsTo(RawMaterialCategory::class, 'raw_material_category_id');
+    }
+
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
+
+    public function rawMaterialCategory()
+    {
+        return $this->belongsTo(RawMaterialCategory::class);
+    }
+
+
 }

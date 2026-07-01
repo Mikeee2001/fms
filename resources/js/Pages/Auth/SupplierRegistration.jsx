@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useForm, Head, Link } from '@inertiajs/react';
+import { useForm, Head, Link, usePage } from '@inertiajs/react';
 import { Building2, User, Phone, Mail, MapPin, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import InputLabel from '@/Components/InputLabel';
+import axios from 'axios';
 
 export default function RegisterSupplier() {
     const [step, setStep] = useState(1);
@@ -11,6 +12,7 @@ export default function RegisterSupplier() {
     const [localErrors, setLocalErrors] = useState({});
     const [preview, setPreview] = useState(null);
 
+    const { flash } = usePage().props;
 
     const { data, setData, post, processing, errors } = useForm({
         email: '',
@@ -21,60 +23,10 @@ export default function RegisterSupplier() {
         contact_number: '',
         address: '',
         company_logo: null,
-        categories: [],
     });
 
-    const supplierCategories = [
-        'Wood',
-        'Lumber',
-        'Plywood',
-        'Foam',
-        'Fabric',
-        'Metal',
-        'Glass',
-        'Paint',
-        'Hardware',
-        'Upholstery Materials',
-    ];
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-
-        if (file) {
-            setData('company_logo', file);
-            setPreview(URL.createObjectURL(file));
-        }
-    };
-
-    const handleNext = (e) => {
-        e.preventDefault();
-        let validationErrors = {};
-
-        if (!data.email.trim()) validationErrors.email = 'Email is required';
-        if (!data.password) validationErrors.password = 'Password is required';
-        if (data.password.length < 8) validationErrors.password = 'Password must be at least 8 characters';
-        if (data.password !== data.password_confirmation) validationErrors.password_confirmation = 'Passwords do not match';
-
-        setLocalErrors(validationErrors);
-
-        if (Object.keys(validationErrors).length === 0) {
-            setStep(2);
-        }
-    };
-
-    const submit = (e) => {
-        e.preventDefault();
-
-        console.log(data.company_logo);
-
-        // Post the FormData directly
-        post(route('supplier.register.store'), {
-            preserveScroll: true,
-            forceFormData: true,
-        });
-    };
-    // Helper for input classes to keep code clean
-    const inputClasses = "w-full pl-10 pr-10 py-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none";
+    const inputClasses =
+        "w-full pl-10 pr-10 py-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none";
 
     const companyFields = [
         {
@@ -93,7 +45,7 @@ export default function RegisterSupplier() {
             label: 'Contact Number',
             id: 'contact_number',
             icon: Phone,
-            placeholder: 'Enter contact number',
+            placeholder: '9123456789',
         },
         {
             label: 'Address',
@@ -102,73 +54,162 @@ export default function RegisterSupplier() {
             placeholder: 'Enter company address',
         },
     ];
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+
+        if (file) {
+            setData('company_logo', file);
+            setPreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleNext = async (e) => {
+        e.preventDefault();
+
+        let validationErrors = {};
+
+        if (!data.email.trim()) {
+            validationErrors.email = 'Email is required';
+        }
+
+        if (!data.password) {
+            validationErrors.password = 'Password is required';
+        } else if (data.password.length < 8) {
+            validationErrors.password = 'Password must be at least 8 characters';
+        }
+
+        if (!data.password_confirmation) {
+            validationErrors.password_confirmation = 'Confirm your password';
+        } else if (data.password !== data.password_confirmation) {
+            validationErrors.password_confirmation = 'Passwords do not match';
+        }
+
+        if (Object.keys(validationErrors).length > 0) {
+            setLocalErrors(validationErrors);
+            return;
+        }
+
+        try {
+            const response = await axios.post(route('check.email'), {
+                email: data.email,
+            });
+
+            if (response.data.exists) {
+                setLocalErrors({
+                    email: 'This email address is already registered.',
+                });
+                return;
+            }
+
+            setLocalErrors({});
+            setStep(2);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const submit = (e) => {
+        e.preventDefault();
+
+        let validationErrors = {};
+
+        if (!data.company_name.trim()) {
+            validationErrors.company_name = 'Company name is required';
+        }
+
+        if (!data.contact_person.trim()) {
+            validationErrors.contact_person = 'Contact person is required';
+        }
+
+        if (!data.contact_number) {
+            validationErrors.contact_number = 'Contact number is required';
+        } else if (!/^9\d{9}$/.test(data.contact_number)) {
+            validationErrors.contact_number =
+                'Enter a valid Philippine mobile number';
+        }
+
+        if (!data.address.trim()) {
+            validationErrors.address = 'Address is required';
+        }
+
+        if (Object.keys(validationErrors).length > 0) {
+            setLocalErrors(validationErrors);
+            return;
+        }
+
+        post(route('supplier.register.store'), {
+            preserveScroll: true,
+            forceFormData: true,
+        });
+    };
+
     return (
         <GuestLayout>
             <Head title="Supplier Registration" />
+
             <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
                 <div className="w-full max-w-lg bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
-                    {/* Replace your current header div with this to match "Screenshot 2026-06-27 195401.png" */}
+
+                    {/* HEADER */}
                     <div className="text-center mb-8">
                         <div className="flex justify-center mb-4">
                             <div className="h-16 w-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
                                 <Building2 className="h-8 w-8 text-white" />
                             </div>
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900">Create an account</h2>
-                        <p className="mt-2 text-sm text-gray-600">Join us to start shopping</p>
+
+                        <h2 className="text-3xl font-bold text-gray-900">
+                            Create Supplier Account
+                        </h2>
+                        <p className="mt-2 text-sm text-gray-600">
+                            Join us to start supplying materials
+                        </p>
                     </div>
 
+                    {/* STEP INDICATOR */}
                     <div className="flex gap-2 mb-8">
                         <div className={`h-2 flex-1 rounded-full ${step >= 1 ? 'bg-orange-500' : 'bg-gray-200'}`} />
                         <div className={`h-2 flex-1 rounded-full ${step >= 2 ? 'bg-orange-500' : 'bg-gray-200'}`} />
-                        <div className={`h-2 flex-1 rounded-full ${step >= 3 ? 'bg-orange-500' : 'bg-gray-200'}`} />
                     </div>
 
                     <form onSubmit={submit}>
+
+                        {/* STEP 1 */}
                         {step === 1 && (
                             <div className="space-y-4">
-                                <div>
-                                    <InputLabel
-                                        htmlFor="email"
-                                        value="Email"
-                                        className="text-sm font-medium text-gray-700 mb-1"
-                                    />
 
+                                {/* EMAIL */}
+                                <div>
+                                    <InputLabel value="Email" />
                                     <div className="relative">
                                         <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-
                                         <input
-                                            id="email"
                                             type="email"
                                             value={data.email}
-                                            onChange={(e) => setData('email', e.target.value)}
+                                            placeholder='Enter email'
+                                            onChange={(e) =>
+                                                setData('email', e.target.value)
+                                            }
                                             className={inputClasses}
-                                            placeholder="example@email.com"
                                         />
                                     </div>
-
-                                    {(localErrors.email || errors.email) && (
-                                        <p className="text-red-500 text-xs mt-1">
-                                            {localErrors.email || errors.email}
-                                        </p>
+                                    {localErrors.email && (
+                                        <p className="text-red-500 text-xs">{localErrors.email}</p>
                                     )}
                                 </div>
 
+                                {/* PASSWORD */}
                                 <div>
-                                    <InputLabel
-                                        htmlFor="password"
-                                        value="Password"
-                                        className="text-sm font-medium text-gray-700 mb-1"
-                                    />
+                                    <InputLabel value="Password" />
 
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
 
                                         <input
-                                            id="password"
                                             type={showPassword ? 'text' : 'password'}
-                                            placeholder="Enter Password"
                                             value={data.password}
+                                            placeholder="Enter password"
                                             onChange={(e) => setData('password', e.target.value)}
                                             className={inputClasses}
                                         />
@@ -187,26 +228,20 @@ export default function RegisterSupplier() {
                                     </div>
 
                                     {localErrors.password && (
-                                        <p className="text-red-500 text-xs mt-1">
-                                            {localErrors.password}
-                                        </p>
+                                        <p className="text-red-500 text-xs">{localErrors.password}</p>
                                     )}
                                 </div>
 
+                                {/* CONFIRM PASSWORD */}
                                 <div>
-                                    <InputLabel
-                                        htmlFor="password_confirmation"
-                                        value="Confirm Password"
-                                        className="text-sm font-medium text-gray-700 mb-1"
-                                    />
+                                    <InputLabel value="Confirm Password" />
 
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
 
                                         <input
-                                            id="password_confirmation"
                                             type={showConfirmPassword ? 'text' : 'password'}
-                                            placeholder="Confirm Password"
+                                            placeholder="Enter confirm password"
                                             value={data.password_confirmation}
                                             onChange={(e) =>
                                                 setData('password_confirmation', e.target.value)
@@ -214,11 +249,10 @@ export default function RegisterSupplier() {
                                             className={inputClasses}
                                         />
 
+                                        {/* 👁️ EYE ICON ADDED HERE */}
                                         <button
                                             type="button"
-                                            onClick={() =>
-                                                setShowConfirmPassword(!showConfirmPassword)
-                                            }
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                             className="absolute right-3 top-3 text-gray-500"
                                         >
                                             {showConfirmPassword ? (
@@ -230,195 +264,149 @@ export default function RegisterSupplier() {
                                     </div>
 
                                     {localErrors.password_confirmation && (
-                                        <p className="text-red-500 text-xs mt-1">
+                                        <p className="text-red-500 text-xs">
                                             {localErrors.password_confirmation}
                                         </p>
                                     )}
                                 </div>
 
-                                <button type="button" onClick={handleNext} className="w-full bg-black text-white py-3 rounded-lg flex justify-center items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleNext}
+                                    className="w-full bg-black text-white py-3 rounded-lg flex justify-center items-center gap-2"
+                                >
                                     Continue <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
                         )}
 
+                        {/* STEP 2 */}
+                        {/* STEP 2 */}
                         {step === 2 && (
                             <div className="space-y-4">
 
+                                {/* LOGO */}
                                 <div>
-                                    <InputLabel
-                                        htmlFor="company_logo"
-                                        value="Company Logo"
-                                        className="text-sm font-medium text-gray-700 mb-1"
-                                    />
+                                    <InputLabel value="Company Logo" />
 
                                     <input
-                                        id="company_logo"
                                         type="file"
-                                        accept="image/*"
                                         onChange={handleImageChange}
                                         className="w-full border rounded-lg p-2"
+                                        accept="image/*"
                                     />
 
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Upload JPG, PNG, or WEBP (Max: 2MB)
-                                    </p>
-
                                     {preview && (
-                                        <div className="mt-4">
-                                            <img
-                                                src={preview}
-                                                alt="Company Logo Preview"
-                                                className="h-32 w-32 object-cover rounded-lg border"
-                                            />
-                                        </div>
+                                        <img
+                                            src={preview}
+                                            className="h-24 w-24 object-cover rounded mt-2"
+                                        />
                                     )}
                                 </div>
 
+                                {/* COMPANY FIELDS */}
                                 {companyFields.map((field) => (
                                     <div key={field.id}>
-                                        <InputLabel
-                                            htmlFor={field.id}
-                                            value={field.label}
-                                            className="text-sm font-medium text-gray-700 mb-1"
-                                        />
+                                        <InputLabel value={field.label} />
 
-                                        <div className="relative">
-                                            <field.icon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                                            <input
-                                                id={field.id}
-                                                value={data[field.id]}
-                                                onChange={(e) => setData(field.id, e.target.value)}
-                                                placeholder={field.placeholder}
-                                                className={inputClasses}
-                                            />
-                                        </div>
+                                        {/* ✅ CONTACT NUMBER WITH +63 */}
+                                        {field.id === 'contact_number' ? (
+                                            <div className="flex">
+                                                {/* +63 PREFIX */}
+                                                <span className="flex items-center px-3 border border-r-0 rounded-l-lg bg-gray-100 text-gray-700">
+                                                    +63
+                                                </span>
 
-                                        {errors[field.id] && (
+                                                <input
+                                                    type="tel"
+                                                    value={data.contact_number}
+                                                    placeholder="9123456789"
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'contact_number',
+                                                            e.target.value
+                                                                .replace(/\D/g, '') // numbers only
+                                                                .slice(0, 10) // max 10 digits
+                                                        )
+                                                    }
+                                                    className="w-full py-2 border rounded-r-lg text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="relative">
+                                                <field.icon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+
+                                                <input
+                                                    value={data[field.id]}
+                                                    onChange={(e) =>
+                                                        setData(field.id, e.target.value)
+                                                    }
+                                                    placeholder={field.placeholder}
+                                                    className={inputClasses}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* ERROR MESSAGE */}
+                                        {localErrors[field.id] && (
                                             <p className="text-red-500 text-xs mt-1">
-                                                {errors[field.id]}
+                                                {localErrors[field.id]}
                                             </p>
                                         )}
                                     </div>
                                 ))}
 
+                                {/* BUTTONS */}
                                 <button
-                                    type="button"
-                                    onClick={() => {
-                                        let validationErrors = {};
-
-                                        if (!data.company_name.trim()) {
-                                            validationErrors.company_name = 'Company name is required';
-                                        }
-
-                                        if (!data.contact_person.trim()) {
-                                            validationErrors.contact_person = 'Contact person is required';
-                                        }
-
-                                        if (!data.contact_number.trim()) {
-                                            validationErrors.contact_number = 'Contact number is required';
-                                        }
-
-                                        if (!data.address.trim()) {
-                                            validationErrors.address = 'Address is required';
-                                        }
-
-                                        setLocalErrors(validationErrors);
-
-                                        if (Object.keys(validationErrors).length === 0) {
-                                            setStep(3);
-                                        }
-                                    }}
-                                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg"
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full bg-orange-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-70"
                                 >
-                                    Continue
+                                    {processing && (
+                                        <svg
+                                            className="w-5 h-5 animate-spin"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                                fill="none"
+                                            />
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v8H4z"
+                                            />
+                                        </svg>
+                                    )}
+
+                                    {processing ? 'Creating...' : 'Create Account'}
                                 </button>
 
                                 <button
                                     type="button"
                                     onClick={() => setStep(1)}
-                                    className="w-full bg-black text-white py-3 rounded-lg flex justify-center items-center gap-2"
-                                >
-                                    Back
-                                </button>
-                            </div>
-                        )}
-
-                        {step === 3 && (
-                            <div className="space-y-4">
-                                <InputLabel
-                                    value="Products / Materials You Supply"
-                                    className="text-sm font-medium text-gray-700 mb-2"
-                                />
-
-                                <div className="grid grid-cols-2 gap-3 border rounded-lg p-4">
-                                    {supplierCategories.map((category) => (
-                                        <label
-                                            key={category}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={data.categories.includes(category)}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setData('categories', [...data.categories, category]);
-                                                    } else {
-                                                        setData(
-                                                            'categories',
-                                                            data.categories.filter(item => item !== category)
-                                                        );
-                                                    }
-                                                }}
-                                            />
-
-                                            <span className="text-sm text-gray-700">
-                                                {category}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg"
-                                >
-                                    {processing ? 'Registering...' : 'Complete Registration'}
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setStep(2)}
                                     className="w-full bg-black text-white py-3 rounded-lg"
                                 >
                                     Back
                                 </button>
                             </div>
                         )}
+
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <Link
-                                href={route('login')}
-                                className="font-medium text-orange-600 hover:text-orange-500 transition-colors"
-                            >
-                                Sign in
-                            </Link>
-                        </p>
-                    </div>
-
-                       {/* Terms Hint */}
-                <div className="text-center">
-                    <p className="text-xs text-gray-500">
-                        By creating an account, you agree to our Terms of Service and Privacy Policy.
-                    </p>
-                </div>
+                    {/* FLASH MESSAGE */}
+                    {flash.success && (
+                        <div className="mt-4 bg-green-100 text-green-700 p-3 rounded">
+                            {flash.success}
+                        </div>
+                    )}
 
                 </div>
-
             </div>
         </GuestLayout>
     );

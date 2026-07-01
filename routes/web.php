@@ -6,13 +6,14 @@ use App\Http\Controllers\Admin\CustomizationOptionController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeliveryZoneController;
 use App\Http\Controllers\Admin\DeliveryZoneRequestController;
-use App\Http\Controllers\Admin\MaterialController;
+use App\Http\Controllers\Admin\MaterialController as AdminMaterialController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Auth\SupplierRegisterController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
@@ -21,12 +22,25 @@ use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Delivery\DashboardController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\Auth\SupplierRegisterController;
+use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
+use App\Http\Controllers\Manager\RawMaterialInventoryController;
+use App\Http\Controllers\Manager\RawMaterialPageController;
+use App\Http\Controllers\StaffPasswordController;
+use App\Http\Controllers\Supplier\DashboardController as SupplierDashboard;
+use App\Http\Controllers\Supplier\MaterialController as SupplierMaterialController;
+use App\Http\Controllers\Supplier\MaterialController as SupplierPaymentController;
+use App\Http\Controllers\Supplier\NoticationController;
+use App\Http\Controllers\Supplier\PaymentController;
+use App\Http\Controllers\Supplier\PurchaseOrderController;
+use App\Http\Controllers\Supplier\RawMaterialRequestController;
+use App\Http\Controllers\Supplier\SupplierProfileController;
 use App\Http\Controllers\WebhookController;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
 
 
 
@@ -40,6 +54,10 @@ Route::get('/', function () {
 
 Route::get('/supplier/register', [SupplierRegisterController::class, 'getSupplierRegistration']);
 Route::post('/supplier/register', [SupplierRegisterController::class, 'supplierRegistration'])->name('supplier.register.store');
+Route::post('/check-email', function (Request $request) {
+    return response()->json(['exists' => User::where('email', $request->email)->exists(),]);
+})->name('check.email');
+
 
 Route::get('/products', [CustomerProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product}', [CustomerProductController::class, 'show'])->name('products.show');
@@ -116,7 +134,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Admin routes (require auth + admin middleware)
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::resource('products', AdminProductController::class);
     Route::resource('orders', AdminOrderController::class);
@@ -133,17 +151,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Material management routes
     Route::prefix('materials')->name('materials.')->group(function () {
-        Route::get('/', [MaterialController::class, 'index'])->name('index');
-        Route::get('/archived', [MaterialController::class, 'archived'])->name('archived');
-        Route::get('/logs', [MaterialController::class, 'logs'])->name('logs');
-        Route::post('/', [MaterialController::class, 'store'])->name('store');
-        Route::put('/{material}', [MaterialController::class, 'update'])->name('update');
-        Route::delete('/{material}', [MaterialController::class, 'destroy'])->name('destroy');
-        Route::post('/{id}/restore', [MaterialController::class, 'restore'])->name('restore');
-        Route::delete('/{id}/force-delete', [MaterialController::class, 'forceDelete'])->name('forceDelete');
-        Route::post('/{material}/stock-in', [MaterialController::class, 'stockIn'])->name('stock.in');
-        Route::post('/{material}/stock-out', [MaterialController::class, 'stockOut'])->name('stock.out');
-        Route::get('/{material}/linked-options', [MaterialController::class, 'getLinkedOptions'])->name('linked-options');
+        Route::get('/', [AdminMaterialController::class, 'index'])->name('index');
+        Route::get('/', [AdminMaterialController::class, 'index'])->name('index');
+        Route::get('/archived', [AdminMaterialController::class, 'archived'])->name('archived');
+        Route::get('/logs', [AdminMaterialController::class, 'logs'])->name('logs');
+        Route::post('/', [AdminMaterialController::class, 'store'])->name('store');
+        Route::put('/{material}', [AdminMaterialController::class, 'update'])->name('update');
+        Route::delete('/{material}', [AdminMaterialController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/restore', [AdminMaterialController::class, 'restore'])->name('restore');
+        Route::delete('/{id}/force-delete', [AdminMaterialController::class, 'forceDelete'])->name('forceDelete');
+        Route::post('/{material}/stock-in', [AdminMaterialController::class, 'stockIn'])->name('stock.in');
+        Route::post('/{material}/stock-out', [AdminMaterialController::class, 'stockOut'])->name('stock.out');
+        Route::get('/{material}/linked-options', [AdminMaterialController::class, 'getLinkedOptions'])->name('linked-options');
     });
 
     Route::prefix('customization-categories')->name('customization-categories.')->group(function () {
@@ -164,8 +183,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [SupplierController::class, 'index'])->name('index');
         Route::get('/list', [SupplierController::class, 'getSuppliersList'])->name('list');
         Route::post('/', [SupplierController::class, 'store'])->name('store');
-        Route::put('/{supplier}', [SupplierController::class, 'update'])->name('update');
         Route::delete('/{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
+        Route::put('/{supplier}/status', [SupplierController::class, 'updateStatusSupplier'])->name('update-status');
+
+        Route::post('/{id}/restore', [SupplierController::class, 'restore'])->name('restore');
+        // Archive (Soft Delete)
+        Route::delete('/{supplier}', [SupplierController::class, 'archive'])->name('archive');
+        // Restore
+        Route::post('/{id}/restore', [SupplierController::class, 'restore'])->name('restore');
+        // Permanent Delete
+        Route::delete('/{id}/force-delete', [SupplierController::class, 'forceDelete'])->name('forceDelete');
+
     });
 
     // Delivery Zones Management Routes
@@ -205,15 +233,64 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::resource('staff', StaffController::class);
 
+    Route::middleware(['auth', 'role:delivery'])->prefix('delivery')->name('delivery.')->group(function () {
+
+        Route::get('dashboard', [DashboardController::class, 'index'])->name('index');
+
+    });
+
+});
+
+Route::middleware(['auth', 'role:supplier'])->prefix('supplier')->name('supplier.')->group(function () {
+
+    Route::get('/dashboard', [SupplierDashboard::class, 'index'])->name('dashboard');
+
+    // Materials
+    Route::resource('materials', SupplierMaterialController::class);
+    // Archived Materials Page
+    Route::get('/materials/archived', [SupplierMaterialController::class, 'archiveList'])->name('materials.archived');
+
+    // Archive Material
+    Route::delete('/materials/{material}/archive', [SupplierMaterialController::class, 'archive'])->name('materials.archive');
+    // Add Stock page
+    Route::get('/materials/{material}/stock', [SupplierMaterialController::class, 'addStock'])->name('materials.stock');
+    // Save Stock
+    Route::post('/materials/{material}/stock', [SupplierMaterialController::class, 'storeStock'])->name('materials.add.stock');
+    // View Inventory Logs
+    Route::get('/materials/{material}/logs', [SupplierMaterialController::class, 'logs'])->name('materials.logs');
+    Route::put('/materials/{material}/status', [SupplierMaterialController::class, 'updateStatus'])->name('materials.updateStatus');
+    Route::post('/materials/{material}/restore', [SupplierMaterialController::class, 'restore'])->name('materials.restore');
+    Route::get('/raw-material-requests', [RawMaterialRequestController::class, 'index'])->name('requests.order');
+
+    Route::delete('/materials/{material}/force-delete', [SupplierMaterialController::class, 'forceDelete'])->name('materials.forceDelete');
+
+    Route::get('/raw-material', [RawMaterialRequestController::class, 'index'])->name('raw-material.index');
+
+    // Orders
+    Route::resource('purchase-orders', PurchaseOrderController::class);
+    // Payments
+    Route::resource('payments', SupplierPaymentController::class);
+    // Profile
+    Route::resource('profile', SupplierProfileController::class);
+
+    Route::post('/notifications/mark-as-read', [NoticationController::class, 'markAsRead'])->name('supplier.notifications.read');
+
+    Route::post('/notifications/mark-all-read', [NoticationController::class, 'markAllAsRead'])->name('supplier.notifications.read-all');
 
 });
 
 
-Route::middleware(['auth', 'delivery'])->prefix('delivery')->name('delivery.')->group(function () {
+Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
 
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('index');
+    Route::get('/dashboard', [ManagerDashboardController::class, 'dashboard'])->name('dashboard');
+    Route::get('/inventory', [RawMaterialInventoryController::class, 'index'])->name('manager.inventory');
+    Route::get('/raw-materials', [RawMaterialPageController::class, 'rawMaterialPage'])->name('raw-materials');
 
 });
+
+Route::get('/staff/setup-password/{user}', [StaffPasswordController::class, 'show'])->name('staff.setup-password');
+Route::post('/staff/setup-password/{user}', [StaffPasswordController::class, 'store'])->name('staff.setup-password.store');
+
 
 // Test routes (keep as is)
 Route::get('/test-product/{id}', function ($id) {

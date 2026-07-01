@@ -4,38 +4,39 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-       Schema::create('goods_receipts', function (Blueprint $table) {
-    $table->id();
+        Schema::create('goods_receipts', function (Blueprint $table) {
 
-    $table->foreignId('purchase_order_id')
-        ->constrained()
-        ->cascadeOnDelete();
+            $table->id();
 
-    $table->foreignId('received_by')
-        ->constrained('users')
-        ->cascadeOnDelete();
+            $table->foreignId('purchase_order_id')
+                ->constrained()
+                ->cascadeOnDelete();
 
-    $table->string('receipt_number')->unique();
+            $table->foreignId('received_by')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
-    $table->date('received_date');
+            $table->string('receipt_number')->unique();
 
-    $table->enum('status', [
-        'pending',
-        'partial',
-        'completed'
-    ])->default('pending');
+            $table->date('received_date');
 
-    $table->text('remarks')->nullable();
+            $table->enum('status', [
+                'pending',
+                'partial',
+                'completed'
+            ])->default('pending');
 
-    $table->timestamps();
-});
+            $table->text('remarks')->nullable();
+
+            $table->timestamps();
+
+        });
     }
 
     /**

@@ -2,13 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\Material;
+use App\Models\PurchaseOrder;
+use App\Models\RawMaterial;
+use App\Models\RawMaterialCategory;
+use App\Models\SupplierCategory;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Supplier extends Model
 {
     use HasFactory;
+    use SoftDeletes;
+    use Notifiable;
 
     protected $fillable = [
         'user_id',
@@ -18,7 +27,6 @@ class Supplier extends Model
         'contact_number',
         'product_category',
         'address',
-        'notes',
         'status',
     ];
 
@@ -47,5 +55,28 @@ class Supplier extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+
+    public function purchaseOrders()
+    {
+        return $this->hasMany(PurchaseOrder::class);
+    }
+
+    public function rawMaterialCategories()
+    {
+        return $this->hasManyThrough(
+            RawMaterialCategory::class,
+            Material::class,
+            'supplier_id',
+            'id',
+            'id',
+            'raw_material_category_id'
+        );
+    }
+
+    public function rawMaterials()
+    {
+        return $this->hasMany(RawMaterial::class);
     }
 }

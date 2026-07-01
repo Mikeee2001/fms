@@ -3,28 +3,32 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-// use Illuminate\Mail\Mailables\Attachment;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NewStaffAccountMail extends Mailable implements ShouldQueue
+class NewStaffAccountMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     // Public properties are automatically exposed inside your custom HTML view
     public $user;
-    public $password;
+    public $randomPassword;
+    public $setupLink;
+
 
     /**
      * Create a new message instance.
      */
-    public function __construct($user, $password)
+    public function __construct($user, $randomPassword, $setupLink)
     {
         $this->user = $user;
-        $this->password = $password;
+        $this->randomPassword = $randomPassword;
+        $this->setupLink = $setupLink;
+
+
     }
 
     /**
@@ -33,7 +37,7 @@ class NewStaffAccountMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to the Team! Your Account Credentials',
+            subject: 'Welcome to the Team! Setup Your Account'
         );
     }
 
@@ -43,10 +47,9 @@ class NewStaffAccountMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.staff.created', // Points directly to resources/views/emails/staff/created.blade.php
+            view: 'emails.staff.created'
         );
     }
-
     /**
      * Get the attachments for the message.
      *

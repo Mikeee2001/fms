@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Truck, Plus, Eye, Edit, Trash2, FileText, Settings, Search, Users } from 'lucide-react';
+import { Shield, Truck, Eye, Edit, Trash2, Settings, Search, Users } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
-import { usePage, router, Head, Link } from '@inertiajs/react';
+import { usePage, router, Head, Link, useForm } from '@inertiajs/react';
 import { confirmDialog } from 'primereact/confirmdialog';
 import { useToast } from '@/Contexts/ToastContext';
 
@@ -11,6 +11,21 @@ export default function Index({ users, filters = {} }) {
 
     const [activeTab, setActiveTab] = useState(filters?.role || 'all');
     const [searchQuery, setSearchQuery] = useState(filters?.search || '');
+    const [showCreateModal, setShowCreateModal] = useState(false);
+
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        errors,
+        reset,
+    } = useForm({
+        name: '',
+        email: '',
+        role_as: 'admin',
+        specification: '',
+    });
 
     const tabs = [
         { id: 'all', label: 'All' },
@@ -23,6 +38,20 @@ export default function Index({ users, filters = {} }) {
         if (filters?.role) setActiveTab(filters.role);
         if (filters?.search) setSearchQuery(filters.search);
     }, [filters]);
+
+    useEffect(() => {
+        if (flash?.success) {
+            showToast('success', 'Success', flash.success);
+        }
+
+        if (flash?.error) {
+            showToast('error', 'Error', flash.error);
+        }
+
+        if (flash?.info) {
+            showToast('info', 'Info', flash.info);
+        }
+    }, [flash, showToast]);
 
     // Triggers background fetch immediately without reloading the actual window layout
     const handleTabChange = (roleId) => {
@@ -57,10 +86,9 @@ export default function Index({ users, filters = {} }) {
     };
 
     useEffect(() => {
-        if (flash?.success) showToast('success', 'Success', flash.success);
-        if (flash?.error) showToast('error', 'Error', flash.error);
-        if (flash?.info) showToast('info', 'Info', flash.info);
-    }, [flash]);
+        setActiveTab(filters?.role || 'all');
+        setSearchQuery(filters?.search || '');
+    }, [filters]);
 
     const confirmDelete = (staff) => {
         confirmDialog({
@@ -82,31 +110,25 @@ export default function Index({ users, filters = {} }) {
         });
     };
 
-    const getRoleBadge = (role_as) => {
-        if (role_as === 'manager') {
-            return (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-900/30 text-amber-400 border border-amber-800/50">
-                    <Shield className="w-3.5 h-3.5" /> Manager
-                </span>
-            );
-        }
-        if (role_as === 'delivery') {
-            return (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-blue-900/30 text-blue-400 border border-blue-800/50">
-                    <Truck className="w-3.5 h-3.5" /> Delivery
-                </span>
-            );
-        }
-        if (role_as === 'admin') {
-            return (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-purple-900/30 text-purple-400 border border-purple-800/50">
-                    <Settings className="w-3.5 h-3.5" /> Admin
-                </span>
-            );
-        }
+    const getRoleBadge = (role) => {
+        const styles = {
+            admin: 'bg-purple-900/30 text-purple-400 border-purple-800/50',
+            manager: 'bg-amber-900/30 text-amber-400 border-amber-800/50',
+            delivery: 'bg-blue-900/30 text-blue-400 border-blue-800/50',
+        };
+
+        const icons = {
+            admin: <Settings className="w-3.5 h-3.5" />,
+            manager: <Shield className="w-3.5 h-3.5" />,
+            delivery: <Truck className="w-3.5 h-3.5" />,
+        };
+
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-stone-800 text-stone-400 border border-stone-700">
-                {role_as}
+            <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${styles[role]}`}
+            >
+                {icons[role]}
+                {role.charAt(0).toUpperCase() + role.slice(1)}
             </span>
         );
     };
@@ -124,12 +146,13 @@ export default function Index({ users, filters = {} }) {
                             <h1 className="text-3xl font-bold tracking-tight">Staff Management</h1>
                             <p className="text-stone-400 mt-1 text-sm">Manage systems administrators, managers, and logistics dispatch personnel.</p>
                         </div>
-                        <Link
-                            href={route('admin.staff.create')}
-                            className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-black font-semibold px-4 py-2 rounded-md transition-colors text-sm"
+                        <button
+                            type="button"
+                            onClick={() => setShowCreateModal(true)}
+                            className="bg-amber-600 hover:bg-amber-500 text-black px-4 py-2 rounded-lg font-medium"
                         >
-                            <Plus className="w-4 h-4" /> Add Staff
-                        </Link>
+                            + Add Staff
+                        </button>
                     </div>
 
                     {/* Navigation Filters and Search Bar Section */}
@@ -172,7 +195,7 @@ export default function Index({ users, filters = {} }) {
                                     <th className="px-6 py-4">Staff Code</th>
                                     <th className="px-6 py-4">Name Details</th>
                                     <th className="px-6 py-4">Role Profile</th>
-                                    <th className="px-6 py-4">Profile Metadata Details</th>
+                                    <th className="px-6 py-4">Created Date</th>
                                     <th className="px-6 py-4 text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -190,32 +213,11 @@ export default function Index({ users, filters = {} }) {
                                             <td className="px-6 py-4">
                                                 {getRoleBadge(user.role_as)}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                {user.role_as === 'manager' && user.manager && (
-                                                    <div className="text-xs space-y-1">
-                                                        <p className="text-stone-300 flex items-center gap-1.5">
-                                                            <FileText className="w-3.5 h-3.5 text-amber-500" />
-                                                            Spec: <span className="font-medium text-white">{user.manager.specification || 'General'}</span>
-                                                        </p>
-                                                        <p className="text-stone-400">
-                                                            Status: <span className="capitalize text-stone-300">{user.manager.status}</span>
-                                                        </p>
-                                                    </div>
-                                                )}
-                                                {user.role_as === 'delivery' && user.delivery_personnel && (
-                                                    <div className="text-xs space-y-1">
-                                                        <p className="text-stone-300 capitalize">
-                                                            Vehicle: <span className="font-medium text-white">{user.delivery_personnel.vehicle_type}</span>
-                                                        </p>
-                                                        <p className="text-stone-400 font-mono text-[11px]">
-                                                            Plate: {user.delivery_personnel.plate_number || 'N/A'}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                                {user.role_as !== 'manager' && user.role_as !== 'delivery' && (
-                                                    <span className="text-stone-500 text-xs italic">No metadata parameters</span>
-                                                )}
+
+                                            <td className="px-6 py-4 text-stone-400 text-sm">
+                                                {new Date(user.created_at).toLocaleDateString()}
                                             </td>
+
                                             <td className="px-6 py-4 text-center">
                                                 <div className="flex items-center justify-center gap-3">
                                                     <Link href={route('admin.staff.show', user.id)} className="inline-flex items-center p-1.5 text-stone-400 hover:text-white transition-colors">
@@ -280,6 +282,140 @@ export default function Index({ users, filters = {} }) {
                     </div>
                 </div>
             </div>
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                    <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 w-full max-w-md">
+
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-white">
+                                Create Staff Account
+                            </h2>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowCreateModal(false)}
+                                className="text-stone-400 hover:text-white"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+
+                                post(route('admin.staff.store'), {
+                                    preserveScroll: true,
+                                    onSuccess: () => {
+                                        reset();
+                                        setShowCreateModal(false);
+                                    }
+                                });
+                            }}
+                        >
+                            <div className="space-y-4">
+
+                                <div>
+                                    <label className="block text-sm mb-2">
+                                        Full Name
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={data.name}
+                                        placeholder='Enter Fullname'
+                                        onChange={(e) =>
+                                            setData('name', e.target.value)
+                                        }
+                                        className="w-full bg-black border border-stone-700 rounded-lg p-3 text-white"
+                                    />
+
+                                    {errors.name && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {errors.name}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm mb-2">
+                                        Email Address
+                                    </label>
+
+                                    <input
+                                        type="email"
+                                        value={data.email}
+                                        placeholder='Enter Email address'
+                                        onChange={(e) =>
+                                            setData('email', e.target.value)
+                                        }
+                                        className="w-full bg-black border border-stone-700 rounded-lg p-3 text-white"
+                                    />
+
+                                    {errors.email && (
+                                        <p className="text-red-500 text-xs mt-1">
+                                            {errors.email}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm mb-2">
+                                        Role
+                                    </label>
+
+                                    <select
+                                        value={data.role_as}
+                                        onChange={(e) =>
+                                            setData('role_as', e.target.value)
+                                        }
+                                        className="w-full bg-black border border-stone-700 rounded-lg p-3 text-white"
+                                    >
+                                        <option value="admin">Administrator</option>
+                                        <option value="manager">Manager</option>
+                                        <option value="delivery">Delivery Personnel</option>
+                                    </select>
+                                </div>
+
+                                {data.role_as === 'manager' && (
+                                    <div>
+                                        <label className="block text-sm mb-2">
+                                            Manager Specification
+                                        </label>
+
+                                        <select
+                                            value={data.specification}
+                                            onChange={(e) =>
+                                                setData('specification', e.target.value)
+                                            }
+                                            className="w-full bg-black border border-stone-700 rounded-lg p-3 text-white"
+                                        >
+                                            <option value="">Select Specification</option>
+                                            <option value="Inventory Management">Inventory Management</option>
+                                            <option value="Sales Management">Sales Management</option>
+                                            <option value="Operations Management">Operations Management</option>
+                                            <option value="Warehouse Management">Warehouse Management</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="w-full bg-amber-600 hover:bg-amber-500 text-black py-3 rounded-lg font-semibold"
+                                >
+                                    {processing
+                                        ? 'Creating Account...'
+                                        : 'Create Staff Account'}
+                                </button>
+
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            )}
+
         </AdminLayout>
     );
 }

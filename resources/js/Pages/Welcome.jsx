@@ -506,26 +506,27 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </div>
             </div>
             {!auth?.user && (
-                <div className="py-16 bg-stone-100 text-center">
-                    <div className="max-w-3xl mx-auto px-4">
-                        <h3 className="text-2xl font-bold text-stone-800 mb-4">
-                            Are you a furniture supplier?
-                        </h3>
+                <section className="py-20 bg-stone-100 text-center">
+                    <div className="max-w-3xl mx-auto px-6">
+                        <h2 className="text-3xl font-extrabold text-stone-800 mb-4">
+                            Become a Supplier
+                        </h2>
 
-                        <p className="text-stone-600 mb-6">
-                            Join our growing network of artisans and suppliers.
-                            Grow your business with A' Arfeels Trading.
+                        <p className="text-stone-600 mb-8 leading-relaxed">
+                            Join our trusted network of artisans and suppliers.
+                            Partner with <span className="font-semibold text-amber-600">A' Arfeels Trading</span>
+                            to grow your business and reach more customers.
                         </p>
 
                         <Link
                             href="/supplier/register"
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-stone-300 rounded-full font-semibold text-stone-800 hover:border-amber-500 hover:text-amber-600 transition-all"
+                            className="inline-flex items-center gap-2 px-8 py-3 bg-amber-500 text-white rounded-full font-semibold shadow hover:bg-amber-600 transition-all"
                         >
                             Register as a Supplier
-                            <ArrowRight className="w-4 h-4" />
+                            <ArrowRight className="w-5 h-5" />
                         </Link>
                     </div>
-                </div>
+                </section>
             )}
 
             <style>{`

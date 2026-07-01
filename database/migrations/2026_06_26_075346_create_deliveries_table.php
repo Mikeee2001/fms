@@ -21,11 +21,6 @@ return new class extends Migration {
                 ->constrained('orders')
                 ->cascadeOnDelete();
 
-            $table->foreignId('delivery_personnel_id')
-                ->nullable()
-                ->constrained('delivery_personnels')
-                ->nullOnDelete();
-
             $table->dateTime('deliver_date');
 
             $table->timestamps();

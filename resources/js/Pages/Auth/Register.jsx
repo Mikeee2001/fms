@@ -119,6 +119,7 @@ export default function Register() {
                                         onChange={(e) => setData('password', e.target.value)}
                                         required
                                     />
+
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}

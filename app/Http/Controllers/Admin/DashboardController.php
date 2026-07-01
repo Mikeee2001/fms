@@ -13,9 +13,10 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    
+
     public function index()
     {
+        //  dd(auth()->user()->role_as);
         // Get filter parameters from request with defaults
         $period = request()->get('period', 'monthly');
         $year = request()->get('year', Carbon::now()->year);

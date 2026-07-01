@@ -55,7 +55,7 @@ export default function Index({ orders, stats }) {
             <Head title="Orders Management" />
 
             <div className="py-6">
-                <div className="mb-6"> section
+                <div className="mb-6"> 
                     <div className="flex justify-between items-center mb-6">
                         <div>
                             <h1 className="text-2xl font-semibold text-white">Orders Management</h1>

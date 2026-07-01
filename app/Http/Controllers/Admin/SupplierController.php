@@ -3,74 +3,93 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\SupplierStatusMail;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 
 class SupplierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::withCount('materials')
-            ->orderBy('name')
-            ->paginate(20);
+        $query = Supplier::query();
 
-        return Inertia::render('Admin/Suppliers/Index', [
-            'suppliers' => $suppliers,
-        ]);
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:suppliers',
-            'contact_person' => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
-
-        Supplier::create($validated);
-
-        return redirect()->route('admin.suppliers.index')
-            ->with('success', 'Supplier created successfully.');
-    }
-
-    public function update(Request $request, Supplier $supplier)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:suppliers,name,' . $supplier->id,
-            'contact_person' => 'nullable|string|max:255',
-            'contact_number' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
-
-        $supplier->update($validated);
-
-        return redirect()->route('admin.suppliers.index')
-            ->with('success', 'Supplier updated successfully.');
-    }
-
-    public function destroy(Supplier $supplier)
-    {
-        // Check if supplier has materials
-        if ($supplier->materials()->count() > 0) {
-            return redirect()->back()->with('error', 'Cannot delete supplier with associated materials.');
+        // ACTIVE / INACTIVE
+        if ($request->status === 'active' || $request->status === 'inactive') {
+            $query->where('status', $request->status);
         }
 
+        // ARCHIVED (SOFT DELETED)
+        if ($request->status === 'archived') {
+            $query->onlyTrashed();
+        }
+
+        $suppliers = $query->latest()->paginate(10);
+
+        return inertia('Admin/Suppliers/Index', [
+            'suppliers' => $suppliers,
+            'filters' => $request->only('status'),
+        ]);
+    }
+
+    public function updateStatusSupplier(Request $request, Supplier $supplier)
+    {
+        $request->validate([
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $supplier->update([
+            'status' => $request->status,
+        ]);
+
+        $supplier->load('user');
+
+        // send email
+        if ($supplier->user && $supplier->user->email) {
+            Mail::to($supplier->user->email)
+                ->send(new SupplierStatusMail($supplier));
+        }
+
+        return back()->with('success', 'Supplier status updated successfully.');
+    }
+
+    public function archive(Supplier $supplier)
+    {
+        if ($supplier->materials()->exists()) {
+            return back()->with(
+                'error',
+                'Cannot archive supplier because it has associated materials.'
+            );
+        }
+
+        // SOFT DELETE ONLY ONCE
         $supplier->delete();
 
-        return redirect()->route('admin.suppliers.index')
-            ->with('success', 'Supplier deleted successfully.');
+        return back()->with('success', 'Supplier archived successfully.');
     }
 
-    public function getSuppliersList()
+    public function restore($id)
     {
-        $suppliers = Supplier::where('is_active', true)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $supplier = Supplier::onlyTrashed()->findOrFail($id);
+        $supplier->restore();
 
-        return response()->json($suppliers);
+        return back()->with('success', 'Supplier restored successfully.');
     }
+
+    public function forceDelete($id)
+    {
+        $supplier = Supplier::onlyTrashed()->findOrFail($id);
+
+        $user = $supplier->user;
+
+        $supplier->forceDelete();
+
+        if ($user) {
+            $user->forceDelete(); // or $user->delete() if using SoftDeletes
+        }
+
+        return back()->with('success', 'Supplier permanently deleted.');
+    }
+
 }
