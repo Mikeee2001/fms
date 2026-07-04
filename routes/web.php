@@ -23,6 +23,7 @@ use App\Http\Controllers\Customer\ProductController as CustomerProductController
 use App\Http\Controllers\Customer\ProfileController;
 use App\Http\Controllers\Delivery\DashboardController;
 use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
+use App\Http\Controllers\Manager\CartController as ManagerCartController;
 use App\Http\Controllers\Manager\RawMaterialInventoryController;
 use App\Http\Controllers\Manager\RawMaterialPageController;
 use App\Http\Controllers\StaffPasswordController;
@@ -283,8 +284,16 @@ Route::middleware(['auth', 'role:supplier'])->prefix('supplier')->name('supplier
 Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
 
     Route::get('/dashboard', [ManagerDashboardController::class, 'dashboard'])->name('dashboard');
-    Route::get('/inventory', [RawMaterialInventoryController::class, 'index'])->name('manager.inventory');
-    Route::get('/raw-materials', [RawMaterialPageController::class, 'rawMaterialPage'])->name('raw-materials');
+    Route::get('/inventory', [RawMaterialInventoryController::class, 'index'])->name('inventory');
+    Route::get('/raw-materials', [RawMaterialPageController::class, 'index'])->name('raw-materials.index');
+
+    // CART
+    Route::get('/cart', [ManagerCartController::class, 'index'])->name('cart.index');
+    Route::post('/cart', [ManagerCartController::class, 'store'])->name('cart.store');
+    Route::patch('/cart/{id}', [ManagerCartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{id}', [ManagerCartController::class, 'destroy'])->name('cart.destroy');
+    Route::delete('/cart/clear', [ManagerCartController::class, 'clear'])->name('cart.clear');
+
 
 });
 

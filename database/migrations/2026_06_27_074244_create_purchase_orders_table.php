@@ -27,12 +27,16 @@ return new class extends Migration {
             $table->date('order_date');
 
             $table->enum('status', [
+                'draft',
                 'pending',
                 'approved',
+                'shipped',
                 'received',
                 'cancelled'
-            ])->default('pending');
+            ])->default('draft');
 
+            $table->decimal('paid_amount', 12, 2)->default(0);
+            $table->decimal('balance', 12, 2)->default(0);
             $table->decimal('total_amount', 12, 2)->default(0);
 
             $table->text('notes')->nullable();

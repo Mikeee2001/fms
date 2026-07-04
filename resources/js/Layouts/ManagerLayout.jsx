@@ -2,6 +2,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import NotificationDropdown from '@/Components/NotificationDropdown';
+import { useToast } from "@/Contexts/ToastContext";
 import {
     LayoutDashboard,
     Factory,
@@ -16,6 +17,8 @@ import {
 export default function ManagerLayout({ children }) {
 
     const { auth } = usePage().props;
+    const { flash } = usePage().props;
+    const { showToast } = useToast();
 
     const user = auth?.user;
     const notifications = auth?.notifications || [];
@@ -33,6 +36,20 @@ export default function ManagerLayout({ children }) {
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        if (flash?.success) {
+            showToast("success", "Success", flash.success);
+        }
+
+        if (flash?.error) {
+            showToast("error", "Error", flash.error);
+        }
+
+        if (flash?.info) {
+            showToast("info", "Info", flash.info);
+        }
+    }, [flash]);
 
     // Manager Navigation
     const navigationGroups = [
@@ -85,6 +102,11 @@ export default function ManagerLayout({ children }) {
                 {
                     name: "Material Requests",
                     href: "/manager/raw-material-requests",
+                    icon: ClipboardList,
+                },
+                {
+                    name: "Raw Material Page",
+                    href: "/manager/raw-materials",
                     icon: ClipboardList,
                 },
             ],

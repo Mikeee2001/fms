@@ -12,17 +12,26 @@ class PurchaseOrderItem extends Model
         'purchase_order_id',
         'raw_material_id',
         'quantity',
-        'unit_cost',
-        'total_cost',
+        'unit_price',
+        'subtotal',
     ];
+
+    public function getSubtotalAttribute()
+    {
+        return $this->quantity * $this->unit_price;
+    }
 
     public function purchaseOrder()
     {
-        return $this->belongsTo(PurchaseOrder::class);
+        return $this->belongsTo(
+            PurchaseOrder::class
+        );
     }
 
-   public function rawMaterial()
-{
-    return $this->belongsTo(RawMaterial::class);
-}
+    public function rawMaterial()
+    {
+        return $this->belongsTo(
+            RawMaterial::class
+        );
+    }
 }

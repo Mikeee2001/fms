@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Http\Request;
-use Inertia\Middleware;
 use App\Models\Cart;
+use App\Models\Manager;
+use App\Models\PurchaseOrderCart;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -33,15 +35,21 @@ class HandleInertiaRequests extends Middleware
     {
         // Get cart count for the current user/session
         $cartCount = 0;
+        $managerCartCount = 0;
 
         if (Auth::check()) {
-            // Logged in user
-            $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
-        } else {
-            // Guest user
-            $sessionId = $request->cookie('cart_session');
-            if ($sessionId) {
-                $cartCount = Cart::where('session_id', $sessionId)->sum('quantity');
+
+            // check if user is manager
+            $manager = Manager::where('user_id', Auth::id())->first();
+
+            if ($manager) {
+                // 🔥 MANAGER CART
+                $managerCartCount = PurchaseOrderCart::where('manager_id', $manager->id)
+                    ->get()
+                    ->sum(fn($item) => (int) $item->quantity);
+            } else {
+                // 🔥 CUSTOMER CART (fallback)
+                $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');
             }
         }
 
@@ -79,6 +87,7 @@ class HandleInertiaRequests extends Middleware
                 'info' => fn() => $request->session()->get('info'),
             ],
             'cartCount' => $cartCount,
+            'managerCartCount' => $managerCartCount,
         ]);
     }
 }

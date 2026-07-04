@@ -1,5 +1,6 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import { useToast } from "@/Contexts/ToastContext";
 import {
     HiHome,
     HiCube,
@@ -13,11 +14,11 @@ import SupplierNotificationDropdown from "@/Components/SupplierNotificationDropd
 export default function SupplierLayout({ children }) {
     const { auth } = usePage().props;
     const user = auth?.user;
-
     const notifications = auth?.notifications || [];
     const unreadCount = auth?.unread_count || 0;
-
     const [sidebarOpen, setSidebarOpen] = useState(true);
+
+
 
     // Refresh shared props every 30 seconds
     useEffect(() => {

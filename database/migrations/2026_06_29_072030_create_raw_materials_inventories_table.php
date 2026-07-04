@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('raw_material_inventory', function (Blueprint $table) {
+        Schema::create('raw_material_inventories', function (Blueprint $table) {
 
             $table->id();
 
@@ -29,6 +29,6 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('raw_material_inventory');
+        Schema::dropIfExists('raw_material_inventories');
     }
 };

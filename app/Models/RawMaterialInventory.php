@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RawMaterialInventory extends Model
 {
-    protected $table = 'raw_material_inventory';
+    protected $table = 'raw_material_inventories';
 
     protected $fillable = [
         'raw_material_id',
@@ -20,6 +20,10 @@ class RawMaterialInventory extends Model
 
     protected $casts = [
         'last_restock_date' => 'date',
+    ];
+
+    protected $appends = [
+        'stock_status',
     ];
 
     public function logs()
@@ -38,16 +42,19 @@ class RawMaterialInventory extends Model
         );
     }
 
-    public function getStatusAttribute()
+    public function getStockStatusAttribute()
     {
-        if ($this->current_stock <= 0) {
-            return 'Out of Stock';
+        $stock = $this->current_stock ?? 0;
+        $minimum = $this->minimum_stock ?? 0;
+
+        if ($stock <= 0) {
+            return 'out_of_stock';
         }
 
-        if ($this->current_stock <= $this->minimum_stock) {
-            return 'Low Stock';
+        if ($stock <= $minimum) {
+            return 'low_stock';
         }
 
-        return 'In Stock';
+        return 'in_stock';
     }
 }

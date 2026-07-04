@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Manager;
+use App\Models\Product;
+use App\Models\ProductSize;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,4 +42,10 @@ class Cart extends Model
     {
         return $this->belongsTo(ProductSize::class, 'size_id');
     }
+
+    public function manager()
+    {
+        return $this->belongsTo(Manager::class, 'size_id');
+    }
+
 }

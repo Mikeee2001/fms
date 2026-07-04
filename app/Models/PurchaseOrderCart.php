@@ -3,23 +3,24 @@
 namespace App\Models;
 
 use App\Models\Manager;
-use App\Models\PurchaseOrderItem;
+use App\Models\RawMaterial;
 use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Model;
 
-class PurchaseOrder extends Model
+class PurchaseOrderCart extends Model
 {
+    protected $table = 'purchase_order_carts';
     protected $fillable = [
-        'supplier_id',
         'manager_id',
-        'po_number',
-        'order_date',
-        'status',
-        'total_amount',
-        'paid_amount',
-        'balance',
-        'notes',
+        'supplier_id',
+        'raw_material_id',
+        'quantity'
     ];
+
+    public function material()
+    {
+        return $this->belongsTo(RawMaterial::class, 'raw_material_id');
+    }
 
     public function supplier()
     {
@@ -31,10 +32,5 @@ class PurchaseOrder extends Model
         return $this->belongsTo(Manager::class);
     }
 
-    public function items()
-    {
-        return $this->hasMany(
-            PurchaseOrderItem::class
-        );
-    }
+
 }

@@ -1,9 +1,14 @@
 import SupplierLayout from '@/Layouts/SupplierLayout';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage, } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { useToast } from "@/Contexts/ToastContext";
 
 export default function Create() {
 
+
     const { categories = [], units = [], sizes = [] } = usePage().props;
+    const { showToast } = useToast();
+    const { flash } = usePage().props;
 
     const { data, setData, post, processing, errors } = useForm({
         raw_material_category_id: '',
@@ -15,12 +20,66 @@ export default function Create() {
         maximum_stock: '',
         size_id: '',
         size_custom: '',
+        material_images: [],
     });
+
+
+    useEffect(() => {
+        if (flash?.success) {
+            showToast("success", "Success", flash.success);
+        }
+
+        if (flash?.error) {
+            showToast("error", "Error", flash.error);
+        }
+
+        if (flash?.info) {
+            showToast("info", "Info", flash.info);
+        }
+    }, [flash]);
+
 
     function submit(e) {
         e.preventDefault();
-        post(route('supplier.materials.store'));
+
+        post(route('supplier.materials.store'), {
+            forceFormData: true,
+
+            onSuccess: () => {
+                showToast(
+                    "success",
+                    "Success",
+                    "Raw material created successfully!"
+                );
+            },
+
+            onError: (err) => {
+                console.log("VALIDATION ERROR:", err);
+
+                showToast({
+                    type: "error",
+                    message: "Please fix the errors and try again."
+                });
+            }
+        });
     }
+    const [previews, setPreviews] = useState([]);
+
+    const handleImages = (e) => {
+        const newFiles = Array.from(e.target.files);
+
+        setData("material_images", [
+            ...data.material_images,
+            ...newFiles,
+        ]);
+
+        setPreviews((prev) => [
+            ...prev,
+            ...newFiles.map((file) =>
+                URL.createObjectURL(file)
+            ),
+        ]);
+    };
 
 
     return (
@@ -57,6 +116,82 @@ export default function Create() {
                 >
                     {/* FORM FIELDS */}
                     <div className="grid md:grid-cols-2 gap-6">
+
+                        <div className="md:col-span-2">
+                            <label className="block text-stone-300 mb-2">
+                                Material Images
+                            </label>
+
+                            <div className="flex items-center gap-3">
+                                <label className="cursor-pointer px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg">
+                                    Select Images
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={handleImages}
+                                        className="hidden"
+                                    />
+                                </label>
+
+                                <span className="text-stone-400 text-sm">
+                                    {previews.length} image(s) selected
+                                </span>
+                            </div>
+
+                            {previews.length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                    {previews.map((preview, index) => (
+                                        <div
+                                            key={index}
+                                            className="relative border border-stone-700 rounded-lg overflow-hidden"
+                                        >
+                                            <img
+                                                src={preview}
+                                                alt={`Preview ${index + 1}`}
+                                                className="w-full h-32 object-cover"
+                                            />
+
+                                            {index === 0 && (
+                                                <span className="absolute top-2 left-2 bg-amber-600 text-white text-xs px-2 py-1 rounded">
+                                                    Primary
+                                                </span>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const updatedPreviews =
+                                                        previews.filter(
+                                                            (_, i) => i !== index
+                                                        );
+
+                                                    const updatedFiles =
+                                                        data.material_images.filter(
+                                                            (_, i) => i !== index
+                                                        );
+
+                                                    setPreviews(updatedPreviews);
+                                                    setData(
+                                                        "material_images",
+                                                        updatedFiles
+                                                    );
+                                                }}
+                                                className="absolute top-2 right-2 bg-red-600 text-white w-6 h-6 rounded-full text-xs"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {errors.material_images && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.material_images}
+                                </p>
+                            )}
+                        </div>
 
                         {/* Material Name */}
                         <div>
@@ -225,8 +360,8 @@ export default function Create() {
                             type="submit"
                             disabled={processing}
                             className={`px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-white transition ${processing
-                                    ? 'bg-amber-500 cursor-not-allowed opacity-70'
-                                    : 'bg-amber-600 hover:bg-amber-700'
+                                ? 'bg-amber-500 cursor-not-allowed opacity-70'
+                                : 'bg-amber-600 hover:bg-amber-700'
                                 }`}
                         >
                             {processing && (

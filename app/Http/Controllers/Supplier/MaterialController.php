@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Supplier;
 use App\Http\Controllers\Controller;
 use App\Models\RawMaterial;
 use App\Models\RawMaterialCategory;
+use App\Models\RawMaterialImage;
 use App\Models\RawMaterialInventory;
 use App\Models\RawMaterialInventoryLog;
 use App\Models\Size;
@@ -73,7 +74,8 @@ class MaterialController extends Controller
                     'category',
                     'unit',
                     'inventory',
-                    'size'
+                    'size',
+                    'images'
                 ])
                 ->where('supplier_id', $supplier->id)
                 ->latest()
@@ -97,7 +99,9 @@ class MaterialController extends Controller
             'category',
             'unit',
             'inventory',
-            'size'
+            'size',
+            'images',
+            'primaryImage'
         ])->where('supplier_id', $supplier->id);
 
         if ($status === 'active') {
@@ -137,12 +141,14 @@ class MaterialController extends Controller
             'unit_id' => 'required|exists:units,id',
             'purchase_price' => 'required|numeric|min:0',
 
+            'material_images' => 'nullable|array',
+            'material_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+
             'current_stock' => 'required|numeric|min:0',
             'minimum_stock' => 'required|numeric|min:0',
-            'maximum_stock' => 'nullable|numeric|min:0',
 
             'size_id' => 'required',
-            'size_custom' => 'required_if:size_id,custom|max:100',
+            'size_custom' => 'nullable|max:100',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -166,7 +172,6 @@ class MaterialController extends Controller
             } else {
 
                 $sizeId = $request->size_id;
-
             }
 
             /*
@@ -181,14 +186,42 @@ class MaterialController extends Controller
                 'unit_id' => $request->unit_id,
                 'size_id' => $sizeId,
                 'material_name' => $request->material_name,
-                'slug' => Str::slug($request->material_name . '-' . time()),
+                'slug' => Str::slug(
+                    $request->material_name . '-' . time()
+                ),
                 'purchase_price' => $request->purchase_price,
                 'is_active' => true,
             ]);
 
             /*
             |--------------------------------------------------------------------------
-            | Raw Material Inventory
+            | Raw Material Images
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->hasFile('material_images')) {
+
+                foreach (
+                    $request->file('material_images')
+                    as $index => $image
+                ) {
+
+                    $path = $image->store(
+                        'raw-materials',
+                        'public'
+                    );
+
+                    RawMaterialImage::create([
+                        'raw_material_id' => $rawMaterial->id,
+                        'image_path' => $path,
+                        'is_primary' => $index === 0,
+                    ]);
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Inventory
             |--------------------------------------------------------------------------
             */
 
@@ -202,7 +235,7 @@ class MaterialController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | Raw Material Inventory Log
+            | Inventory Log
             |--------------------------------------------------------------------------
             */
 
@@ -225,7 +258,10 @@ class MaterialController extends Controller
 
         return redirect()
             ->route('supplier.materials.index')
-            ->with('success', 'Raw material added successfully.');
+            ->with(
+                'success',
+                'Raw material added successfully.'
+            );
     }
 
     public function show(RawMaterial $material)

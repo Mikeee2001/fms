@@ -49,7 +49,7 @@ class Supplier extends Model
 
     public function getMaterialCountAttribute()
     {
-        return $this->materials()->count();
+        return $this->rawMaterials()->count();
     }
 
     public function user()
@@ -77,6 +77,9 @@ class Supplier extends Model
 
     public function rawMaterials()
     {
-        return $this->hasMany(RawMaterial::class);
+        return $this->hasMany(
+            RawMaterial::class,
+            'supplier_id'
+        );
     }
 }

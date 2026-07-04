@@ -170,7 +170,7 @@ export default function Index() {
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-white">
-                           Raw Materials
+                            Raw Materials
                         </h1>
 
                         <p className="text-stone-400 mt-1">
@@ -308,7 +308,11 @@ export default function Index() {
                         <thead className="bg-stone-900">
                             <tr>
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Material
+                                    Material Image
+                                </th>
+
+                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                    Material Name
                                 </th>
 
                                 <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
@@ -356,6 +360,23 @@ export default function Index() {
                                             key={material.id}
                                             className="hover:bg-stone-900 transition"
                                         >
+                                            <td className="px-6 py-4">
+                                                {material.images?.length > 0 ? (
+                                                    <img
+                                                        src={`/storage/${material.images[0].image_path}`}
+                                                        alt={material.material_name}
+                                                        className="w-14 h-14 rounded-lg object-cover border border-stone-700"
+                                                    />
+                                                ) : (
+                                                    <div className="w-14 h-14 rounded-lg bg-stone-800 flex items-center justify-center">
+                                                        <Package
+                                                            size={20}
+                                                            className="text-stone-500"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </td>
+
                                             {/* MATERIAL */}
                                             <td className="px-6 py-4 font-medium text-white">
                                                 {material.material_name}
@@ -379,18 +400,19 @@ export default function Index() {
                                             {/* STOCK */}
                                             <td className="px-6 py-4">
                                                 <div className="text-white font-semibold">
-                                                    {material.inventory?.current_stock ?? 0}
+                                                    {Number(material.inventory?.current_stock ?? 0)}
                                                 </div>
 
-                                                {material.inventory?.current_stock <=
-                                                    material.inventory?.minimum_stock ? (
-                                                    <span className="text-xs text-red-400">
-                                                        Low Stock
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs text-green-400">
-                                                        In Stock
-                                                    </span>
+                                                {material.inventory?.stock_status === "low_stock" && (
+                                                    <span className="text-xs text-red-400">Low Stock</span>
+                                                )}
+
+                                                {material.inventory?.stock_status === "out_of_stock" && (
+                                                    <span className="text-xs text-gray-400">Out of Stock</span>
+                                                )}
+
+                                                {material.inventory?.stock_status === "in_stock" && (
+                                                    <span className="text-xs text-green-400">In Stock</span>
                                                 )}
                                             </td>
 

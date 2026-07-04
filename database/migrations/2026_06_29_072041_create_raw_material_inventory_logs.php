@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('raw_material_inventory_id')
-                ->constrained('raw_material_inventory')
+                ->constrained('raw_material_inventories')
                 ->cascadeOnDelete();
 
             $table->foreignId('raw_material_id')

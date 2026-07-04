@@ -10,25 +10,20 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('purchase_order_items', function (Blueprint $table) {
+        Schema::create('raw_material_images', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('purchase_order_id')
-                ->constrained()
-                ->cascadeOnDelete();
 
             $table->foreignId('raw_material_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->decimal('quantity', 10, 2);
-            $table->decimal('unit_price', 12, 2);
+            $table->string('image_path');
 
-            $table->decimal('subtotal', 12, 2);
+            $table->boolean('is_primary')
+                ->default(false);
 
             $table->timestamps();
         });
-
     }
 
     /**
@@ -36,6 +31,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchase_order_items');
+        Schema::dropIfExists('raw_material_images');
     }
 };

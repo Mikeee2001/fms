@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\PurchaseOrderItem;
 use App\Models\RawMaterialCategory;
+use App\Models\RawMaterialImage;
 use App\Models\RawMaterialInventory;
 use App\Models\RawMaterialInventoryLog;
 use App\Models\Size;
@@ -32,6 +33,12 @@ class RawMaterial extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+
+    public function getStatusAttribute()
+    {
+        return $this->is_active ? 'active' : 'inactive';
+    }
 
     public function supplier()
     {
@@ -76,4 +83,17 @@ class RawMaterial extends Model
         return $this->hasMany(PurchaseOrderItem::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(
+            RawMaterialImage::class
+        );
+    }
+
+    public function primaryImage()
+    {
+        return $this->hasOne(RawMaterialImage::class)
+            ->where('is_primary', true);
+    }
 }
+
