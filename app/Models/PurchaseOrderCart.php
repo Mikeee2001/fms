@@ -17,7 +17,13 @@ class PurchaseOrderCart extends Model
         'quantity'
     ];
 
-    public function material()
+    protected $casts = [
+        'quantity' => 'integer',
+    ];
+
+
+
+    public function rawMaterial()
     {
         return $this->belongsTo(RawMaterial::class, 'raw_material_id');
     }
@@ -31,6 +37,8 @@ class PurchaseOrderCart extends Model
     {
         return $this->belongsTo(Manager::class);
     }
+
+
 
 
 }

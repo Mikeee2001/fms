@@ -1,6 +1,6 @@
 import { Head, useForm } from "@inertiajs/react";
 
-export default function Create({ material }) {
+export default function Index({ material }) {
     const { data, setData, post, processing } =
         useForm({
             raw_material_id: material.id,

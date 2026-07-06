@@ -17,24 +17,35 @@ class PurchaseOrder extends Model
         'status',
         'total_amount',
         'paid_amount',
+        'payment_type',
         'balance',
         'notes',
     ];
 
-    public function supplier()
+    public function items()
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_id');
+    }
+
+    public function totalItems()
+    {
+        return $this->items()->sum('quantity');
+    }
+
+    public function totalAmount()
+    {
+        return $this->items()->sum('subtotal');
     }
 
     public function manager()
     {
-        return $this->belongsTo(Manager::class);
+        return $this->belongsTo(Manager::class, 'manager_id');
     }
 
-    public function items()
+    public function supplier()
     {
-        return $this->hasMany(
-            PurchaseOrderItem::class
-        );
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
+  
+
 }

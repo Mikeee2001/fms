@@ -36,7 +36,11 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
-        switch ($user->role_as) {
+        if (!$user || !$user->role_as) {
+            abort(403, 'Role not assigned');
+        }
+
+        switch (strtolower($user->role_as)) {
             case 'admin':
                 return redirect()->route('admin.dashboard');
 
@@ -49,8 +53,11 @@ class AuthenticatedSessionController extends Controller
             case 'delivery':
                 return redirect()->route('delivery.dashboard');
 
+            case 'user':
+                return redirect()->route('customer.dashboard'); // if exists
+
             default:
-                abort(403, 'Invalid user role');
+                abort(403, 'Invalid user role: ' . $user->role_as);
         }
     }
 

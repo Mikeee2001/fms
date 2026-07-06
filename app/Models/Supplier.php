@@ -58,11 +58,6 @@ class Supplier extends Model
     }
 
 
-    public function purchaseOrders()
-    {
-        return $this->hasMany(PurchaseOrder::class);
-    }
-
     public function rawMaterialCategories()
     {
         return $this->hasManyThrough(
@@ -82,4 +77,11 @@ class Supplier extends Model
             'supplier_id'
         );
     }
+
+    public function purchaseOrders()
+    {
+        return $this->hasMany(PurchaseOrder::class, 'supplier_id');
+    }
+
+
 }

@@ -16,22 +16,18 @@ class PurchaseOrderItem extends Model
         'subtotal',
     ];
 
-    public function getSubtotalAttribute()
+    public function getComputedSubtotalAttribute()
     {
         return $this->quantity * $this->unit_price;
     }
 
     public function purchaseOrder()
     {
-        return $this->belongsTo(
-            PurchaseOrder::class
-        );
+        return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
     public function rawMaterial()
     {
-        return $this->belongsTo(
-            RawMaterial::class
-        );
+        return $this->belongsTo(RawMaterial::class, 'raw_material_id');
     }
 }

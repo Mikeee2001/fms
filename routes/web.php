@@ -21,20 +21,27 @@ use App\Http\Controllers\Customer\DeliveryRequestController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\ProfileController;
+
 use App\Http\Controllers\Delivery\DashboardController;
+
 use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
 use App\Http\Controllers\Manager\CartController as ManagerCartController;
 use App\Http\Controllers\Manager\RawMaterialInventoryController;
 use App\Http\Controllers\Manager\RawMaterialPageController;
+use App\Http\Controllers\Manager\CheckOutController as ManagerCheckOutController;
+
+
 use App\Http\Controllers\StaffPasswordController;
+
 use App\Http\Controllers\Supplier\DashboardController as SupplierDashboard;
 use App\Http\Controllers\Supplier\MaterialController as SupplierMaterialController;
 use App\Http\Controllers\Supplier\MaterialController as SupplierPaymentController;
-use App\Http\Controllers\Supplier\NoticationController;
+use App\Http\Controllers\Supplier\NotificationController as SupplierNotificaitonController;
 use App\Http\Controllers\Supplier\PaymentController;
 use App\Http\Controllers\Supplier\PurchaseOrderController;
 use App\Http\Controllers\Supplier\RawMaterialRequestController;
 use App\Http\Controllers\Supplier\SupplierProfileController;
+
 use App\Http\Controllers\WebhookController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -261,7 +268,7 @@ Route::middleware(['auth', 'role:supplier'])->prefix('supplier')->name('supplier
     Route::get('/materials/{material}/logs', [SupplierMaterialController::class, 'logs'])->name('materials.logs');
     Route::put('/materials/{material}/status', [SupplierMaterialController::class, 'updateStatus'])->name('materials.updateStatus');
     Route::post('/materials/{material}/restore', [SupplierMaterialController::class, 'restore'])->name('materials.restore');
-    Route::get('/raw-material-requests', [RawMaterialRequestController::class, 'index'])->name('requests.order');
+    Route::get('/raw-material-requests', [RawMaterialRequestController::class, 'index'])->name('request.index');
 
     Route::delete('/materials/{material}/force-delete', [SupplierMaterialController::class, 'forceDelete'])->name('materials.forceDelete');
 
@@ -274,9 +281,14 @@ Route::middleware(['auth', 'role:supplier'])->prefix('supplier')->name('supplier
     // Profile
     Route::resource('profile', SupplierProfileController::class);
 
-    Route::post('/notifications/mark-as-read', [NoticationController::class, 'markAsRead'])->name('supplier.notifications.read');
 
-    Route::post('/notifications/mark-all-read', [NoticationController::class, 'markAllAsRead'])->name('supplier.notifications.read-all');
+    Route::get('/notifications', [SupplierNotificaitonController::class, 'index'])
+        ->name('supplier.notifications.index');
+    Route::post('/notifications/mark-as-read', [SupplierNotificaitonController::class, 'markAsRead'])->name('supplier.notifications.read');
+
+    Route::post('/notifications/mark-all-as-read', [SupplierNotificaitonController::class, 'markAllAsRead'])
+        ->name('supplier.notifications.markAllAsRead');
+
 
 });
 
@@ -291,8 +303,18 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
     Route::get('/cart', [ManagerCartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [ManagerCartController::class, 'store'])->name('cart.store');
     Route::patch('/cart/{id}', [ManagerCartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{id}', [ManagerCartController::class, 'destroy'])->name('cart.destroy');
-    Route::delete('/cart/clear', [ManagerCartController::class, 'clear'])->name('cart.clear');
+    Route::delete('/cart/clear', [ManagerCartController::class, 'clear'])
+        ->name('cart.clear');
+
+    Route::delete('/cart/{id}', [ManagerCartController::class, 'destroy'])
+        ->whereNumber('id')
+        ->name('cart.destroy');
+
+    Route::get('/checkout', [ManagerCheckOutController::class, 'page'])
+        ->name('checkout.page');
+
+    Route::post('/checkout', [ManagerCheckOutController::class, 'store'])
+        ->name('checkout.store');
 
 
 });

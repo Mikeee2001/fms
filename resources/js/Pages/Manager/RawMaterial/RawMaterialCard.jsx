@@ -1,12 +1,8 @@
 import { router, usePage } from "@inertiajs/react";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useToast } from "@/Contexts/ToastContext";
 
-
-
-export default function RawMaterialCard({ material, }) {
-
-
+export default function RawMaterialCard({ material }) {
     const { showToast } = useToast();
     const { flash } = usePage().props;
 
@@ -18,77 +14,60 @@ export default function RawMaterialCard({ material, }) {
     const isLow = stock > 0 && stock <= (material.inventory?.minimum_stock ?? 10);
 
     const addToCart = (material) => {
-        router.post("/manager/cart", {
-            raw_material_id: material.id,
-            supplier_id: material.supplier_id,
-            quantity: 1,
-        }, {
-            preserveScroll: true,
-
-            onSuccess: () => {
-                showToast(
-                    "success",
-                    "Success",
-                    "Added to cart successfully!"
-                );
-
-                router.reload({
-                    only: ["managerCartCount"]
-                });
+        router.post(
+            "/manager/cart",
+            {
+                raw_material_id: material.id,
+                supplier_id: material.supplier_id,
+                quantity: 1,
             },
-
-            onError: () => {
-                showToast(
-                    "error",
-                    "Error",
-                    "Failed to update cart"
-                );
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    showToast("success", "Added", "Item added to cart");
+                    router.reload({ only: ["managerCartCount"] });
+                },
+                onError: () => {
+                    showToast("error", "Error", "Failed to add item");
+                },
             }
-        });
+        );
     };
 
     useEffect(() => {
-        if (flash?.success) {
-            showToast("success", "Success", flash.success);
-        }
-
-        if (flash?.error) {
-            showToast("error", "Error", flash.error);
-        }
-
-        if (flash?.info) {
-            showToast("info", "Info", flash.info);
-        }
+        if (flash?.success) showToast("success", "Success", flash.success);
+        if (flash?.error) showToast("error", "Error", flash.error);
+        if (flash?.info) showToast("info", "Info", flash.info);
     }, [flash]);
 
     return (
-        <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
+        <div className="group bg-white rounded-2xl border border-[#f1f1f1] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
 
-            {/* IMAGE SECTION */}
-            <div className="relative h-52 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+            {/* IMAGE */}
+            <div className="relative h-52 bg-gradient-to-br from-[#fff7ed] to-[#fff] overflow-hidden">
 
                 {image ? (
                     <img
                         src={`/storage/${image}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
                 ) : (
-                    <div className="h-full flex items-center justify-center text-gray-400 font-medium">
+                    <div className="h-full flex items-center justify-center font-medium text-[#c4b5fd]">
                         No Image Available
                     </div>
                 )}
 
                 {/* STATUS BADGE */}
                 <div className="absolute top-3 right-3">
-                    <span className={`
-                px-3 py-1 text-xs font-semibold rounded-full shadow-sm
-                ${isOut
-                            ? "bg-red-500 text-white"
-                            : isLow
-                                ? "bg-yellow-400 text-black"
-                                : "bg-green-500 text-white"
-                        }
-            `}>
+                    <span
+                        className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm
+                        ${isOut
+                                ? "bg-red-500 text-white"
+                                : isLow
+                                    ? "bg-amber-400 text-black"
+                                    : "bg-emerald-500 text-white"
+                            }`}
+                    >
                         {isOut ? "Out of Stock" : isLow ? "Low Stock" : "Available"}
                     </span>
                 </div>
@@ -98,80 +77,70 @@ export default function RawMaterialCard({ material, }) {
             <div className="p-5 space-y-3">
 
                 {/* TITLE */}
-                <h2 className="text-lg font-bold text-gray-900 leading-snug">
+                <h2 className="text-lg font-bold text-[#111827]">
                     {material.material_name}
                 </h2>
 
-                {/* META INFO (CLEAN GRID STYLE) */}
-                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                {/* GRID INFO */}
+                <div className="grid grid-cols-2 gap-3 text-sm">
 
-                    <div className="space-y-1">
-                        <p><span className="text-gray-400">Category</span></p>
-                        <p className="font-medium text-gray-900">
+                    <div>
+                        <p className="text-xs text-[#a78bfa]">Category</p>
+                        <p className="font-semibold text-[#111827]">
                             {material.category?.raw_category_name}
                         </p>
                     </div>
 
-                    <div className="space-y-1">
-                        <p><span className="text-gray-400">Supplier</span></p>
-                        <p className="font-medium text-gray-900">
+                    <div>
+                        <p className="text-xs text-[#a78bfa]">Supplier</p>
+                        <p className="font-semibold text-[#111827]">
                             {material.supplier?.company_name}
                         </p>
                     </div>
 
-                    <div className="space-y-1">
-                        <p><span className="text-gray-400">Unit</span></p>
-                        <p className="font-medium text-gray-900">
+                    <div>
+                        <p className="text-xs text-[#a78bfa]">Unit</p>
+                        <p className="font-semibold text-[#111827]">
                             {material.unit?.name}
                         </p>
                     </div>
 
                     {material.size && (
-                        <div className="space-y-1">
-                            <p><span className="text-gray-400">Size</span></p>
-                            <p className="font-medium text-gray-900">
+                        <div>
+                            <p className="text-xs text-[#a78bfa]">Size</p>
+                            <p className="font-semibold text-[#111827]">
                                 {material.size.name}
                             </p>
                         </div>
                     )}
                 </div>
 
-                {/* STOCK + PRICE ROW */}
-                <div className="flex items-center justify-between pt-2">
+                {/* STOCK + PRICE */}
+                <div className="flex items-end justify-between pt-2">
 
                     <div>
-                        <p className="text-xs text-gray-400">Available Stock</p>
-                        <p className="font-semibold text-black">
-                            {stock.toFixed(0)}
-                        </p>
+                        <p className="text-xs text-[#a78bfa]">Stock</p>
+                        <p className="font-bold text-[#111827]">{stock}</p>
                     </div>
 
                     <div className="text-right">
-                        <p className="text-xs text-gray-400">Price</p>
-                        <p className="text-lg font-bold text-gray-900">
+                        <p className="text-xs text-[#a78bfa]">Price</p>
+                        <p className="text-lg font-extrabold text-[#111827]">
                             ₱{Number(material.purchase_price).toLocaleString()}
                         </p>
                     </div>
                 </div>
 
-                {/* DESCRIPTION */}
-                {material.description && (
-                    <p className="text-sm text-gray-500 line-clamp-2">
-                        {material.description}
-                    </p>
-                )}
-
                 {/* BUTTON */}
                 <button
                     onClick={() => addToCart(material)}
                     disabled={isOut}
-                    className={`
-                w-full mt-3 py-3 rounded-xl font-semibold transition-all duration-200
-                ${isOut
-                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                            : "bg-black text-white hover:bg-gray-800 active:scale-[0.98]"
+                    className={`w-full mt-3 py-3 rounded-xl font-semibold transition-all duration-200
+                        ${isOut
+                            ? "bg-[#f3f4f6] text-[#9ca3af] cursor-not-allowed"
+                            : "bg-gradient-to-r from-[#111827] to-[#1f2937] text-white hover:opacity-90 active:scale-[0.98]"
                         }
-            `}
+                    `}
                 >
                     {isOut ? "Unavailable" : "Add to Cart"}
                 </button>
@@ -179,4 +148,3 @@ export default function RawMaterialCard({ material, }) {
         </div>
     );
 }
-

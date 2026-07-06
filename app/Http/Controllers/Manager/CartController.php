@@ -14,17 +14,19 @@ class CartController extends Controller
 
     public function index()
     {
-        $manager = Manager::where('user_id', auth()->id())->first();
+        $manager = Manager::where('user_id', auth()->id())->firstOrFail();
 
         $cart = PurchaseOrderCart::with([
-            'material.primaryImage',
-            'material.images',
-            'material.category',
-            'material.supplier',
-            'material.unit',
+            'rawMaterial.primaryImage',
+            'rawMaterial.images',
+            'rawMaterial.category',
+            'rawMaterial.supplier',
+            'rawMaterial.unit',
         ])
             ->where('manager_id', $manager->id)
             ->get();
+
+            // dd($cart->toArray());
 
         return Inertia::render('Manager/Cart/Index', [
             'cart' => $cart,
@@ -78,7 +80,7 @@ class CartController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'quantity' => 'required|numeric|min:1',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $manager = Manager::where('user_id', auth()->id())->firstOrFail();
@@ -88,16 +90,19 @@ class CartController extends Controller
             ->firstOrFail();
 
         $cart->update([
-            'quantity' => $request->quantity,
+            'quantity' => $request->quantity
         ]);
 
         $cartItems = PurchaseOrderCart::where('manager_id', $manager->id)->get();
 
         return back()->with([
+            'cart' => $cartItems,
+            'total_items' => $cartItems->sum('quantity'),
             'managerCartCount' => $cartItems->sum('quantity'),
             'success' => 'Updated'
         ]);
     }
+
     /**
      * REMOVE SINGLE ITEM
      */
@@ -106,13 +111,13 @@ class CartController extends Controller
         $manager = Manager::where('user_id', auth()->id())->firstOrFail();
 
         PurchaseOrderCart::where('manager_id', $manager->id)
-            ->where('id', $id);
+            ->where('id', $id)
+            ->delete();
 
         $cartItems = PurchaseOrderCart::where('manager_id', $manager->id)->get();
 
-        return back()->with([
-            'managerCartCount' => $cartItems->sum('quantity'),
-            'success' => 'Deleted'
+        return redirect()->route('manager.cart.index')->with([
+            'success' => 'Deleted',
         ]);
     }
 
@@ -123,11 +128,12 @@ class CartController extends Controller
     {
         $manager = Manager::where('user_id', auth()->id())->firstOrFail();
 
-        PurchaseOrderCart::where('manager_id', $manager->id);
+        PurchaseOrderCart::where('manager_id', $manager->id)->delete();
 
-        return back()->with([
+        return Inertia::render('Manager/Cart/Index', [
+            'cart' => [],
+            'total_items' => 0,
             'managerCartCount' => 0,
-            'success' => 'Cart cleared'
         ]);
     }
 }

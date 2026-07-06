@@ -69,8 +69,20 @@ class DashboardController extends Controller
                 ->get(),
         ];
 
+        $notifications = auth()->user()
+            ->notifications()
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $unreadCount = auth()->user()
+            ->unreadNotifications()
+            ->count();
+
         return Inertia::render('Supplier/Dashboard', [
             'stats' => $stats,
+            'notifications' => $notifications,
+            'unreadCount' => $unreadCount,
         ]);
     }
 

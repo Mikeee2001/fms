@@ -1,196 +1,165 @@
-import { useState, useEffect, useRef } from "react";
-import {
-    Bell,
-    ShoppingCart,
-    Package,
-    AlertTriangle,
-    CheckCircle,
-    XCircle,
-} from "lucide-react";
+import { useState } from "react";
+import axios from "axios";
+import { Bell } from "lucide-react";
 import { router } from "@inertiajs/react";
 
 export default function SupplierNotificationDropdown({
     notifications = [],
-    unreadCount = 0,
+    unread = 0,
+    refresh,
 }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef(null);
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    /* =========================
-       CLOSE ON OUTSIDE CLICK
-    ========================== */
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                dropdownRef.current &&
-                !dropdownRef.current.contains(event.target)
-            ) {
-                setIsOpen(false);
-            }
-        };
+    const markAllAsRead = async () => {
+        if (loading) return;
 
-        document.addEventListener("mousedown", handleClickOutside);
-        return () =>
-            document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    /* =========================
-       ICON MAPPING (SUPPLIER)
-    ========================== */
-    const getNotificationIcon = (type) => {
-        switch (type) {
-            case "new_purchase_order":
-                return <ShoppingCart className="w-5 h-5 text-amber-500" />;
-
-            case "purchase_order_received":
-                return <CheckCircle className="w-5 h-5 text-emerald-500" />;
-
-            case "purchase_order_cancelled":
-                return <XCircle className="w-5 h-5 text-red-500" />;
-
-            case "stock_added":
-                return <Package className="w-5 h-5 text-blue-500" />;
-
-            case "low_stock":
-                return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-
-            default:
-                return <Bell className="w-5 h-5 text-stone-500" />;
+        setLoading(true);
+        try {
+            await axios.post("/supplier/notifications/mark-all-as-read");
+            refresh?.();
+        } finally {
+            setLoading(false);
         }
     };
 
-    /* =========================
-       MARK SINGLE AS READ
-    ========================== */
-    const handleNotificationClick = (notificationId, actionUrl) => {
-        router.post(
-            "/supplier/notifications/mark-as-read",
-            { notification_id: notificationId },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    if (actionUrl) {
-                        router.visit(actionUrl);
-                    }
-                },
-            }
-        );
+    const markAsRead = async (notif) => {
+        if (loading) return;
+
+        try {
+            setLoading(true);
+
+            await axios.post("/supplier/notifications/mark-as-read", {
+                notification_id: notif.id,
+            });
+
+            refresh?.();
+        } finally {
+            setLoading(false);
+        }
     };
 
-    /* =========================
-       MARK ALL AS READ
-    ========================== */
-    const handleMarkAllAsRead = () => {
-        router.post(
-            "/supplier/notifications/mark-all-read",
-            {},
-            {
-                preserveScroll: true,
-                onSuccess: () => setIsOpen(false),
-            }
-        );
+    const handleClick = async (notif) => {
+        await markAsRead(notif);
+
+        setOpen(false);
+
+        if (notif.action_url) {
+            router.visit(notif.action_url);
+        }
     };
 
     return (
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative">
 
-            {/* Bell Button */}
+            {/* Bell */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 text-stone-400 hover:text-white transition"
+                onClick={() => setOpen(!open)}
+                className="relative p-2 rounded-full hover:bg-stone-900 transition"
             >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-6 h-6 text-white" />
 
-                {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                        {unreadCount > 9 ? "9+" : unreadCount}
+                {unread > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                        {unread > 99 ? "99+" : unread}
                     </span>
                 )}
             </button>
 
             {/* Dropdown */}
-            {isOpen && (
-                <div className="absolute right-0 mt-2 w-80 md:w-96 bg-black border border-stone-800 rounded-lg shadow-xl z-50 overflow-hidden">
+            {open && (
+                <div className="absolute right-0 mt-3 w-96 bg-black border border-stone-800 rounded-xl shadow-2xl z-50 overflow-hidden">
 
                     {/* Header */}
-                    <div className="p-3 bg-gradient-to-r from-amber-600 to-orange-500">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-sm font-semibold text-white">
-                                Supplier Notifications
-                            </h3>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800">
+                        <h3 className="text-white font-semibold">
+                            Notifications
+                        </h3>
 
-                            {unreadCount > 0 && (
-                                <button
-                                    onClick={handleMarkAllAsRead}
-                                    className="text-xs text-white/80 hover:text-white"
-                                >
-                                    Mark all as read
-                                </button>
-                            )}
-                        </div>
+                        {unread > 0 && (
+                            <button
+                                onClick={markAllAsRead}
+                                disabled={loading}
+                                className="text-xs text-amber-400 hover:text-amber-300 disabled:opacity-50"
+                            >
+                                {loading ? "Updating..." : "Mark all read"}
+                            </button>
+                        )}
                     </div>
 
                     {/* Body */}
-                    <div className="max-h-96 overflow-y-auto divide-y divide-stone-800">
+                    <div className="max-h-96 overflow-y-auto">
 
                         {notifications.length === 0 ? (
-                            <div className="p-8 text-center">
-                                <Bell className="w-10 h-10 text-stone-600 mx-auto mb-3" />
-                                <p className="text-stone-400 text-sm">
-                                    No notifications yet
-                                </p>
+                            <div className="p-6 text-center text-stone-500 text-sm">
+                                No notifications yet
                             </div>
                         ) : (
-                            notifications.map((notification) => {
-                                const isUnread = !notification.read_at;
-                                const data = notification.data || {};
+                            notifications.map((n) => {
+                                const isUnread = !n.read_at;
 
                                 return (
                                     <div
-                                        key={notification.id}
-                                        onClick={() =>
-                                            handleNotificationClick(
-                                                notification.id,
-                                                data.action_url
-                                            )
-                                        }
-                                        className={`p-4 cursor-pointer transition hover:bg-stone-900 ${isUnread
-                                                ? "bg-stone-900/60"
-                                                : ""
+                                        key={n.id}
+                                        onClick={() => handleClick(n)}
+                                        className={`group px-4 py-3 border-b border-stone-900 cursor-pointer transition hover:bg-stone-900/70 ${isUnread ? "bg-stone-900/40" : ""
                                             }`}
                                     >
-                                        <div className="flex gap-3">
 
-                                            {/* ICON */}
-                                            <div className="flex-shrink-0">
-                                                {getNotificationIcon(data.type)}
-                                            </div>
+                                        {/* Message */}
+                                        <p className="text-sm text-white font-medium group-hover:text-amber-300 transition">
+                                            {n.message}
+                                        </p>
 
-                                            {/* CONTENT */}
-                                            <div className="flex-1 min-w-0">
+                                        {/* PO */}
+                                        {n.po_number && (
+                                            <p className="text-xs text-amber-400 mt-1">
+                                                PO #{n.po_number}
+                                            </p>
+                                        )}
 
-                                                <p className="text-sm text-stone-200">
-                                                    {data.message}
+                                        {/* Details */}
+                                        {n.order_details && (
+                                            <div className="mt-2 text-xs text-stone-400 space-y-1">
+                                                <p>
+                                                    Supplier:{" "}
+                                                    <span className="text-white">
+                                                        {n.order_details.supplier_name}
+                                                    </span>
                                                 </p>
 
-                                                {data.po_number && (
-                                                    <p className="text-xs text-amber-400 mt-1">
-                                                        PO: {data.po_number}
-                                                    </p>
-                                                )}
+                                                <p>
+                                                    Items:{" "}
+                                                    <span className="text-white">
+                                                        {n.order_details.total_items}
+                                                    </span>
+                                                </p>
 
-                                                <p className="text-xs text-stone-500 mt-1">
-                                                    {new Date(
-                                                        notification.created_at
-                                                    ).toLocaleString()}
+                                                <p>
+                                                    Total:{" "}
+                                                    <span className="text-emerald-400">
+                                                        ₱{n.order_details.total_amount}
+                                                    </span>
+                                                </p>
+
+                                                <p>
+                                                    Status:{" "}
+                                                    <span className="text-amber-400">
+                                                        {n.order_details.status}
+                                                    </span>
                                                 </p>
                                             </div>
+                                        )}
 
-                                            {/* UNREAD DOT */}
+                                        {/* Footer */}
+                                        <div className="flex justify-between items-center mt-2">
+                                            <p className="text-[11px] text-stone-500">
+                                                {new Date(n.created_at).toLocaleString()}
+                                            </p>
+
                                             {isUnread && (
-                                                <div className="w-2 h-2 bg-amber-500 rounded-full mt-2" />
+                                                <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
                                             )}
-
                                         </div>
                                     </div>
                                 );

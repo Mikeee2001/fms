@@ -14,11 +14,9 @@ import SupplierNotificationDropdown from "@/Components/SupplierNotificationDropd
 export default function SupplierLayout({ children }) {
     const { auth } = usePage().props;
     const user = auth?.user;
-    const notifications = auth?.notifications || [];
-    const unreadCount = auth?.unread_count || 0;
     const [sidebarOpen, setSidebarOpen] = useState(true);
-
-
+    const [notifications, setNotifications] = useState([]);
+    const [unread, setUnread] = useState(0);
 
     // Refresh shared props every 30 seconds
     useEffect(() => {
@@ -29,6 +27,22 @@ export default function SupplierLayout({ children }) {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await fetch('/supplier/notifications'); // adjust route
+            const data = await res.json();
+
+            setNotifications(data.notifications);
+            setUnread(data.unread_count);
+        } catch (error) {
+            console.error('Notification fetch failed:', error);
+        }
+    };
     const navigationGroups = [
         {
             title: "Overview",
@@ -55,7 +69,7 @@ export default function SupplierLayout({ children }) {
             items: [
                 {
                     name: "Raw Material Requests",
-                    route: "supplier.requests.order",
+                    route: "supplier.request.index",
                     icon: HiClipboardList,
                 },
                 {
@@ -249,11 +263,10 @@ export default function SupplierLayout({ children }) {
                             {/* Right - Notifications + User */}
                             <div className="flex items-center space-x-4">
 
-                                {/* 🔔 NOTIFICATIONS */}
                                 <SupplierNotificationDropdown
                                     notifications={notifications}
-                                    unreadCount={unreadCount}
-                                    userType="supplier"
+                                    unread={unread}
+                                    refresh={fetchNotifications}
                                 />
 
                                 <span className="text-xs text-stone-400">

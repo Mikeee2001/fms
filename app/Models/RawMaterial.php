@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\PurchaseOrderCart;
 use App\Models\PurchaseOrderItem;
 use App\Models\RawMaterialCategory;
 use App\Models\RawMaterialImage;
@@ -78,16 +79,9 @@ class RawMaterial extends Model
         );
     }
 
-    public function purchaseOrderItems()
-    {
-        return $this->hasMany(PurchaseOrderItem::class);
-    }
-
     public function images()
     {
-        return $this->hasMany(
-            RawMaterialImage::class
-        );
+        return $this->hasMany(RawMaterialImage::class);
     }
 
     public function primaryImage()
@@ -95,5 +89,17 @@ class RawMaterial extends Model
         return $this->hasOne(RawMaterialImage::class)
             ->where('is_primary', true);
     }
+
+    public function purchaseOrderItems()
+    {
+        return $this->hasMany(PurchaseOrderItem::class, 'raw_material_id');
+    }
+
+    public function carts()
+    {
+        return $this->hasMany(PurchaseOrderCart::class, 'raw_material_id');
+    }
+
+
 }
 
