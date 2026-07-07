@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\GoodsReceipt;
 use App\Models\Manager;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
@@ -46,6 +47,14 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
-  
+
+
+    public function goodsReceipts()
+    {
+        return $this->hasMany(
+            GoodsReceipt::class
+        );
+    }
+
 
 }

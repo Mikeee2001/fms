@@ -23,9 +23,16 @@ class CheckOutController extends Controller
         $manager = Manager::where('user_id', auth()->id())->firstOrFail();
 
         $cart = PurchaseOrderCart::with([
-            'rawMaterial.primaryImage',
-            'rawMaterial.images',
-            'rawMaterial.supplier',
+            'rawMaterial' => function ($query) {
+                $query->with([
+                    'primaryImage',
+                    'images',
+                    'supplier',
+                    'category',
+                    'unit',
+                    'size',
+                ]);
+            },
         ])
             ->where('manager_id', $manager->id)
             ->get();
@@ -36,13 +43,23 @@ class CheckOutController extends Controller
                 ->with('error', 'Your cart is empty.');
         }
 
-        $total = $cart->sum(function ($item) {
-            return $item->quantity * $item->rawMaterial->purchase_price;
+        $cart->transform(function ($item) {
+
+            $price = $item->rawMaterial->purchase_price;
+
+            $item->subtotal = $price * $item->quantity;
+
+            return $item;
         });
 
+        $total = $cart->sum('subtotal');
+
         return Inertia::render('Manager/Checkout/Index', [
+
             'cart' => $cart,
+
             'total' => $total,
+
         ]);
     }
 
@@ -91,7 +108,7 @@ class CheckOutController extends Controller
                     'manager_id' => $manager->id,
                     'po_number' => 'PO-' . now()->format('YmdHis') . rand(100, 999),
                     'order_date' => now(),
-                    'status' => 'draft',
+                    'status' => 'pending',
                     'payment_type' => 'cash',
                     'total_amount' => $total,
                     'paid_amount' => 0,

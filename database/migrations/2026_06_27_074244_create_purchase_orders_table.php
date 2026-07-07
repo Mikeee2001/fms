@@ -32,6 +32,7 @@ return new class extends Migration {
                 'approved',
                 'shipped',
                 'received',
+                'partially_received',
                 'cancelled'
             ])->default('draft');
 
@@ -40,7 +41,7 @@ return new class extends Migration {
             $table->decimal('total_amount', 12, 2)->default(0);
 
             $table->string('payment_type')->default('cash');
-            
+
             $table->text('notes')->nullable();
 
             $table->timestamps();

@@ -1,156 +1,282 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
-    <title>Monthly Sales Summary</title>
+    <title>Weekly Sales Summary</title>
+
     <style>
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-            line-height: 1.4;
+            color: #1f2937;
+            margin: 40px;
         }
+
+        * {
+            box-sizing: border-box;
+        }
+
         .header {
             text-align: center;
-            margin-bottom: 25px;
-            border-bottom: 2px solid #f59e0b;
-            padding-bottom: 10px;
         }
-        .header h1 {
-            margin: 0;
-            color: #1f2937;
+
+        .logo {
+            width: 90px;
+            margin-bottom: 8px;
         }
-        .header p {
-            margin: 5px 0 0;
-            color: #6b7280;
-        }
-        .year-section {
-            margin-bottom: 25px;
-        }
-        .year-title {
-            background-color: #fef3c7;
-            padding: 6px 12px;
-            font-size: 14px;
+
+        .company-name {
+            font-size: 28px;
             font-weight: bold;
-            margin-bottom: 5px;
+            color: #d97706;
+            margin-bottom: 4px;
         }
-        .summary-table {
-            width: 100%;
+
+        .subtitle {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        .report-title {
+            font-size: 38px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .generated {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        .divider {
+            border: none;
+            border-top: 3px solid #f59e0b;
+            margin-bottom: 25px;
+        }
+
+        table {
             border-collapse: collapse;
         }
-        .summary-table th, .summary-table td {
-            border: 1px solid #e5e7eb;
-            padding: 8px 10px;
+
+        .summary-table {
+            width: 100%;
         }
+
         .summary-table th {
-            background-color: #f3f4f6;
-            font-weight: 600;
+            background: #f5f5f5;
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
             text-align: center;
         }
+
+        .summary-table td {
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            font-size: 13px;
+        }
+
         .summary-table td:first-child {
             text-align: left;
-            font-weight: bold;
         }
+
         .summary-table td:not(:first-child) {
-            text-align: right;
-        }
-        .summary-table td:nth-child(2),
-        .summary-table td:nth-child(4),
-        .summary-table td:nth-child(5) {
             text-align: center;
         }
-        .year-total {
-            background-color: #fef3c7;
+
+        .summary-table tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        .grand-total {
+            width: 100%;
+            margin-top: 28px;
+            background: #1f2937;
+            color: white;
+        }
+
+        .grand-total td {
+            padding: 18px;
+            text-align: center;
             font-weight: bold;
         }
-        .grand-total {
-            margin-top: 20px;
-            background-color: #1f2937;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            text-align: center;
+
+        .grand-title {
+            font-size: 20px;
+            width: 30%;
         }
+
+        .grand-label {
+            font-size: 17px;
+            margin-bottom: 6px;
+        }
+
+        .grand-value {
+            font-size: 18px;
+        }
+
         .footer {
-            margin-top: 25px;
+            margin-top: 35px;
+            border-top: 1px solid #d1d5db;
+            padding-top: 15px;
             text-align: center;
-            font-size: 9px;
-            color: #9ca3af;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 8px;
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 20px;
         }
     </style>
+
 </head>
+
 <body>
+
+    <!-- HEADER -->
+
     <div class="header">
-        <h1>Monthly Sales Summary</h1>
-        <p>A' Arfeels Trading</p>
-        <p>Generated: {{ $generatedAt }}</p>
+
+        <img src="{{ public_path('images/arfeels.png') }}" class="logo">
+
+        <div class="company-name">
+            Arfeels Furniture Trading
+        </div>
+
+        <div class="subtitle">
+            Official Sales Report
+        </div>
+
+        <div class="report-title">
+            Weekly Sales Summary
+        </div>
+
+        <div class="generated">
+            Generated: {{ $generatedAt }}
+        </div>
+
     </div>
 
-    @php
-        // Group monthlyData by year
-        $years = [];
-        foreach ($monthlyData as $month) {
-            $year = \Carbon\Carbon::createFromFormat('F Y', $month['month'])->year;
-            $years[$year][] = $month;
-        }
-    @endphp
+    <hr class="divider">
 
-    @foreach($years as $year => $months)
-        <div class="year-section">
-            <div class="year-title">{{ $year }}</div>
-            <table class="summary-table">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Orders</th>
-                        <th>Total Sales (₱)</th>
-                        <th>COD</th>
-                        <th>GCash</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($months as $month)
-                    <tr>
-                        <td>{{ $month['month'] }}</td>
-                        <td style="text-align: center;">{{ $month['order_count'] }}</td>
-                        <td style="text-align: right;">₱{{ number_format($month['total_sales'], 2) }}</td>
-                        <td style="text-align: center;">{{ $month['payment_methods']['cod'] }}</td>
-                        <td style="text-align: center;">{{ $month['payment_methods']['gcash'] }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-                @php
-                    $yearOrders = array_sum(array_column($months, 'order_count'));
-                    $yearSales = array_sum(array_column($months, 'total_sales'));
-                    $yearCod = array_sum(array_column(array_column($months, 'payment_methods'), 'cod'));
-                    $yearGcash = array_sum(array_column(array_column($months, 'payment_methods'), 'gcash'));
-                @endphp
-                <tfoot>
-                    <tr class="year-total">
-                        <td><strong>Year {{ $year }} Total</strong></td>
-                        <td style="text-align: center;"><strong>{{ $yearOrders }}</strong></td>
-                        <td style="text-align: right;"><strong>₱{{ number_format($yearSales, 2) }}</strong></td>
-                        <td style="text-align: center;"><strong>{{ $yearCod }}</strong></td>
-                        <td style="text-align: center;"><strong>{{ $yearGcash }}</strong></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    @endforeach
+    <!-- SALES TABLE -->
 
-    <div class="grand-total">
-        <div style="display: flex; justify-content: space-between;">
-            <span>🏆 GRAND TOTAL (All Years)</span>
-            <span>Orders: {{ $grandTotals['total_orders'] }}</span>
-            <span>Sales: ₱{{ number_format($grandTotals['total_sales'], 2) }}</span>
-            <span>COD: {{ $grandTotals['cod_count'] }}</span>
-            <span>GCash: {{ $grandTotals['gcash_count'] }}</span>
-        </div>
-    </div>
+    <table class="summary-table">
+
+        <thead>
+
+            <tr>
+
+                <th width="40%">Week</th>
+                <th width="15%">Orders</th>
+                <th width="20%">Total Sales</th>
+                <th width="12%">COD</th>
+                <th width="13%">GCash</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @forelse($weeklyData as $week)
+                <tr>
+
+                    <td>{{ $week['week'] }}</td>
+
+                    <td>{{ $week['order_count'] }}</td>
+
+                    <td style="text-align:right;">
+                        &#8369;{{ number_format($week['total_sales'], 2) }}
+                    </td>
+
+                    <td>{{ $week['payment_methods']['cod'] }}</td>
+
+                    <td>{{ $week['payment_methods']['gcash'] }}</td>
+
+                </tr>
+
+            @empty
+
+                <tr>
+
+                    <td colspan="5" style="text-align:center;padding:18px;">
+                        No completed orders found.
+                    </td>
+
+                </tr>
+            @endforelse
+
+        </tbody>
+
+    </table>
+
+    <!-- GRAND TOTAL -->
+
+    <table class="grand-total">
+
+        <tr>
+
+            <td class="grand-title">
+                GRAND TOTAL
+            </td>
+
+            <td>
+
+                <div class="grand-label">Orders</div>
+
+                <div class="grand-value">
+                    {{ $grandTotals['total_orders'] }}
+                </div>
+
+            </td>
+
+            <td>
+
+                <div class="grand-label">Sales</div>
+
+                <div class="grand-value">
+                    &#8369;{{ number_format($grandTotals['total_sales'], 2) }}
+                </div>
+
+            </td>
+
+            <td>
+
+                <div class="grand-label">COD</div>
+
+                <div class="grand-value">
+                    {{ $grandTotals['cod_count'] }}
+                </div>
+
+            </td>
+
+            <td>
+
+                <div class="grand-label">GCash</div>
+
+                <div class="grand-value">
+                    {{ $grandTotals['gcash_count'] }}
+                </div>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+    <!-- FOOTER -->
 
     <div class="footer">
-        Summary of monthly sales. Detailed order information can be obtained from the admin panel.
+
+        Summary of weekly sales.<br>
+
+        Detailed order information can be obtained from the admin panel.
+
     </div>
+
 </body>
+
 </html>

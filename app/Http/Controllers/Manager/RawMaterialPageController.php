@@ -22,8 +22,8 @@ class RawMaterialPageController extends Controller
         $query = RawMaterial::query()->with([
             'supplier',
             'category',
-            'unit',
-            'size',
+            'unit.name',
+            'size.name',
             'inventory',
             'images'
         ]);
@@ -84,7 +84,7 @@ class RawMaterialPageController extends Controller
         return Inertia::render(
             'Manager/RawMaterial/Index',
             [
-                'materials' => $materials,
+                'rawMaterials' => $materials,
                 'filters' => $request->only([
                     'search',
                     'category',

@@ -28,6 +28,8 @@ class Supplier extends Model
         'product_category',
         'address',
         'status',
+        'latitude',
+        'longitude',
     ];
 
     protected $casts = [

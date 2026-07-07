@@ -25,8 +25,10 @@ class NotificationController extends Controller
                     'id' => $n->id,
                     'type' => $data['type'] ?? null,
                     'message' => $data['message'] ?? $data['title'] ?? 'Notification',
+                    'po_id' => $data['po_id'] ?? null,
                     'po_number' => $data['po_number'] ?? null,
-                    'action_url' => $data['action_url'] ?? null,
+                    'status' => $data['status'] ?? null,
+                    'total_amount' => $data['total_amount'] ?? null,
                     'read_at' => $n->read_at,
                     'created_at' => $n->created_at,
                 ];

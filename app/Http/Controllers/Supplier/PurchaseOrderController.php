@@ -11,11 +11,27 @@ class PurchaseOrderController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Supplier/PurchaseOrders/Index',[
-            'orders'=>PurchaseOrder::with('items.material')
-                ->where('supplier_id',Auth::user()->supplier->id)
+        return Inertia::render('Supplier/PurchaseOrders/Index', [
+            'orders' => PurchaseOrder::with('items.rawMaterial')
+                ->where('supplier_id', Auth::user()->supplier->id)
                 ->latest()
                 ->get()
         ]);
+    }
+
+    public function show(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->load([
+            'items.rawMaterial.unit',
+            'supplier',
+            'manager.user'
+        ]);
+
+        return Inertia::render(
+            'Supplier/PurchaseOrders/Show',
+            [
+                'purchaseOrder' => $purchaseOrder
+            ]
+        );
     }
 }

@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             RawMaterialCategorySeeder::class,
             UnitSeeder::class,
             MaterialSizeSeeder::class,
+            // CategorySeeder::class
         ]);
 
 

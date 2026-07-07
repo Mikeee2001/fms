@@ -9,45 +9,52 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\RawMaterialInventory;
 use App\Models\RawMaterialInventoryLog;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Request;
-use Inertia\Inertia;
 
-class RawMaterialInventoryController extends Controller
+class GoodsReceiptController extends Controller
 {
     public function index()
     {
-        $materials = GoodsReceiptItem::with([
-            'rawMaterial.category',
-            'rawMaterial.supplier',
-            'rawMaterial.unit',
-            'rawMaterial.images',
-            'rawMaterial.primaryImage',
-            'goodsReceipt.purchaseOrder',
+        $purchaseOrders = PurchaseOrder::with([
+            'supplier',
+            'items',
+            'goodsReceipts.items'
         ])
-            ->whereColumn('received_quantity', 'ordered_quantity')
+            ->whereIn('status', [
+                'approved',
+                'shipped',
+                'partially_received',
+                'received'
+            ])
             ->latest()
-            ->paginate(20)
-            ->through(function ($item) {
+            ->get();
 
-                return [
-                    'id' => $item->id,
-
-                    'received_quantity' => $item->received_quantity,
-
-                    'last_received_date' => optional(
-                        $item->goodsReceipt
-                    )->received_date,
-
-                    'rawMaterial' => $item->rawMaterial,
-                ];
-            });
-
-        return Inertia::render(
-            'Manager/Inventory/Index',
+        return inertia(
+            'Manager/GoodsReceipt/Index',
             [
-                'materials' => $materials,
+                'purchaseOrders' => $purchaseOrders,
+            ]
+        );
+    }
+    public function create(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->load([
+            'supplier',
+            'items.rawMaterial.unit',
+        ]);
+
+        $totalOrdered = $purchaseOrder->items->sum('quantity');
+
+        return inertia(
+            'Manager/GoodsReceipt/Create',
+            [
+                'purchaseOrder' => $purchaseOrder,
+
+                'summary' => [
+                    'total_ordered' => $totalOrdered,
+                ],
             ]
         );
     }
@@ -55,38 +62,17 @@ class RawMaterialInventoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'purchase_order_id' => [
-                'required',
-                'exists:purchase_orders,id',
-            ],
-
-            'received_date' => [
-                'required',
-                'date',
-            ],
-
-            'items' => [
-                'required',
-                'array',
-            ],
-
-            'items.*.purchase_order_item_id' => [
-                'required',
-                'exists:purchase_order_items,id',
-            ],
-
-            'items.*.received_quantity' => [
-                'required',
-                'numeric',
-                'min:0',
-            ],
+            'purchase_order_id' => 'required|exists:purchase_orders,id',
+            'received_date' => 'required|date',
+            'items' => 'required|array',
+            'items.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
+            'items.*.received_quantity' => 'required|numeric|min:0',
         ]);
 
         DB::transaction(function () use ($request) {
 
             $purchaseOrder = PurchaseOrder::with([
-                'items',
-                'supplier',
+                'items'
             ])->findOrFail(
                     $request->purchase_order_id
                 );
@@ -102,15 +88,15 @@ class RawMaterialInventoryController extends Controller
 
             $isPartial = false;
 
-            foreach ($request->items as $data) {
+            foreach ($request->items as $item) {
 
                 $poItem = PurchaseOrderItem::findOrFail(
-                    $data['purchase_order_item_id']
+                    $item['purchase_order_item_id']
                 );
 
                 $orderedQty = $poItem->quantity;
 
-                $receivedQty = $data['received_quantity'];
+                $receivedQty = (float) $item['received_quantity'];
 
                 $remainingQty = max(
                     0,
@@ -128,7 +114,6 @@ class RawMaterialInventoryController extends Controller
                     'ordered_quantity' => $orderedQty,
                     'received_quantity' => $receivedQty,
                     'remaining_quantity' => $remainingQty,
-                    'remarks' => null,
                 ]);
 
                 $inventory = RawMaterialInventory::firstOrCreate(
@@ -170,17 +155,34 @@ class RawMaterialInventoryController extends Controller
 
             $purchaseOrder->update([
                 'status' => $isPartial
-                    ? 'shipped'
+                    ? 'partially_received'
                     : 'received',
             ]);
         });
 
         return redirect()
-            ->route('/Manaer/GoodesReceipt/Create')
+            ->route('manager.goods-receipts.index')
             ->with(
                 'success',
-                'Goods receipt created successfully.'
+                'Goods Receipt created successfully.'
             );
     }
 
+    public function show(GoodsReceipt $goodsReceipt)
+    {
+        $goodsReceipt->load([
+            'purchaseOrder.supplier',
+            'purchaseOrder.items.rawMaterial.unit',
+            'items.purchaseOrderItem',
+            'items.rawMaterial.unit',
+            'receiver',
+        ]);
+
+        return inertia(
+            'Manager/GoodsReceipt/Show',
+            [
+                'receipt' => $goodsReceipt,
+            ]
+        );
+    }
 }

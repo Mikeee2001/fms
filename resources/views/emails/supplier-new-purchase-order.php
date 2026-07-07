@@ -82,7 +82,7 @@
         <div class="container">
 
             <div class="header">
-                Arfeels Furniture Trading
+              <Logo className="h-12 w-12" />
             </div>
 
             <div class="content">

@@ -32,6 +32,8 @@ class SupplierRegisterController extends Controller
             'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'company_name' => 'required|string|max:255',
             'contact_person' => 'nullable|string|max:255',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
             'contact_number' => [
                 'required',
                 'regex:/^9\d{9}$/'
@@ -68,6 +70,8 @@ class SupplierRegisterController extends Controller
                 'contact_number' => '+63' . $validated['contact_number'],
                 'address' => $validated['address'] ?? null,
                 'status' => 'inactive',
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
             ]);
 
             /*

@@ -24,6 +24,18 @@ class GoodsReceipt extends Model
 
     public function receiver()
     {
-        return $this->belongsTo(User::class, 'received_by');
+        return $this->belongsTo(
+            User::class,
+            'received_by'
+        );
     }
+
+    public function items()
+    {
+        return $this->hasMany(GoodsReceiptItem::class);
+    }
+
+
+
+
 }

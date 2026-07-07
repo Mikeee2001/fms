@@ -1,7 +1,7 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import { ConfirmDialog } from 'primereact/confirmdialog';
-import NotificationDropdown from '@/Components/NotificationDropdown';
+// import NotificationDropdown from '@/Components/NotificationDropdown';
 import { useToast } from "@/Contexts/ToastContext";
 import {
     LayoutDashboard,
@@ -12,7 +12,10 @@ import {
     ClipboardList,
     Truck,
     FileBarChart2,
+    PackageCheck,
 } from "lucide-react";
+
+import ManagerNotificationDropdown from "@/Components/ManagerNofication";
 
 export default function ManagerLayout({ children }) {
 
@@ -20,11 +23,46 @@ export default function ManagerLayout({ children }) {
     const { flash } = usePage().props;
     const { showToast } = useToast();
 
+
     const user = auth?.user;
-    const notifications = auth?.notifications || [];
-    const unreadCount = auth?.unread_count || 0;
+    // const notifications = auth?.notifications || [];
+    // const unreadCount = auth?.unread_count || 0;
+    const [notifications, setNotifications] = useState([]);
+    const [unread, setUnread] = useState(0);
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await fetch(
+                "/manager/notifications"
+            );
+            const data = await res.json();
+            setNotifications(
+                data.notifications
+            );
+            setUnread(
+                data.unread_count
+            );
+        } catch (error) {
+            console.error(
+                "Notification fetch failed",
+                error
+            );
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchNotifications();
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     // Auto refresh notifications every 30 seconds
     useEffect(() => {
@@ -100,10 +138,15 @@ export default function ManagerLayout({ children }) {
                     icon: Boxes,
                 },
                 {
-                    name: "Material Requests",
-                    href: "/manager/raw-material-requests",
-                    icon: ClipboardList,
+                    name: "Goods Receipts",
+                    href: "/manager/goods-receipts",
+                    icon: PackageCheck,
                 },
+                // {
+                //     name: "Material Requests",
+                //     href: "/manager/raw-material-requests",
+                //     icon: ClipboardList,
+                // },
                 {
                     name: "Raw Material Page",
                     href: "/manager/raw-materials",
@@ -291,10 +334,10 @@ export default function ManagerLayout({ children }) {
 
                             <div className="flex items-center space-x-4">
 
-                                <NotificationDropdown
+                                <ManagerNotificationDropdown
                                     notifications={notifications}
-                                    unreadCount={unreadCount}
-                                    userType="manager"
+                                    unread={unread}
+                                    refresh={fetchNotifications}
                                 />
 
                                 <span className="text-stone-400 text-sm">

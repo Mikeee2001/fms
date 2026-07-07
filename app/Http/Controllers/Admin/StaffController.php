@@ -67,7 +67,7 @@ class StaffController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'role_as' => 'required|in:admin,manager,delivery',
-            'specification' => 'required_if:role_as,manager|string|max:255',
+            'specification' => 'nullable|required_if:role_as,manager|string|max:255',
         ]);
 
         // Generate temporary password
@@ -84,7 +84,7 @@ class StaffController extends Controller
         if ($validated['role_as'] === 'manager') {
             Manager::create([
                 'user_id' => $user->id,
-                'specification' => $request->specification,
+                'specification' => $validated['specification'],
                 'status' => 'active',
             ]);
         }
@@ -113,7 +113,7 @@ class StaffController extends Controller
 
     public function show(User $staff)
     {
-        $staff->load(['manager', 'deliveryPersonnel']);
+        $staff->load(['manager', 'deliveryPersonnel', 'admin']);
 
         return Inertia::render('Admin/Staff/Show', [
             'staff' => $staff

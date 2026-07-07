@@ -2,6 +2,7 @@ import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import NotificationDropdown from '@/Components/NotificationDropdown';
 import { ArrowRight } from 'lucide-react';
+import logo from "../../../public/images/arfeels.png";
 
 export default function CustomerLayout({ children }) {
     const { auth, cartCount: initialCartCount, url } = usePage().props;
@@ -56,20 +57,27 @@ export default function CustomerLayout({ children }) {
                     <div className="flex justify-between items-center h-16">
                         {/* Logo */}
                         <div className="flex items-center">
-                            <Link href="/" className="flex items-center space-x-2 group">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
-                                    <svg className="h-8 w-8 text-amber-500 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                    </svg>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="font-serif text-lg tracking-wide text-white group-hover:text-amber-500 transition-colors duration-300">
-                                        A' Arfeels
-                                    </span>
-                                    <span className="text-[10px] text-stone-500 tracking-wider -mt-1">TRADING</span>
-                                </div>
-                            </Link>
+                            <div className="flex items-center">
+                                <Link href="/" className="flex items-center gap-3 group">
+
+                                    <img
+                                        src={logo}
+                                        alt="Arfeels Furniture Trading"
+                                        className="w-12 h-12 object-contain"
+                                    />
+
+                                    <div className="leading-tight">
+                                        <h1 className="text-white text-lg font-bold group-hover:text-amber-500 transition">
+                                           A' Arfeels
+                                        </h1>
+
+                                        <p className="text-amber-500 text-xs font-semibold tracking-wide">
+                                            Furniture Trading
+                                        </p>
+                                    </div>
+
+                                </Link>
+                            </div>
                         </div>
 
                         {/* Desktop Navigation Links */}
@@ -238,7 +246,7 @@ export default function CustomerLayout({ children }) {
             {/* Main Content */}
             <main className="relative">{children}</main>
 
-          
+
 
             {/* Footer - ONLY displayed on home page (/) and products page (/products) */}
             {shouldShowFooter && (
@@ -247,9 +255,11 @@ export default function CustomerLayout({ children }) {
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                             <div className="col-span-1 md:col-span-1">
                                 <div className="flex items-center space-x-2 mb-4">
-                                    <svg className="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                    </svg>
+                                    <img
+                                        src={logo}
+                                        alt="Arfeels Furniture Trading"
+                                        className="w-12 h-12 object-contain"
+                                    />
                                     <div>
                                         <span className="font-serif text-lg tracking-wide text-white">A' Arfeels</span>
                                         <p className="text-[10px] text-stone-500 tracking-wider -mt-1">TRADING</p>

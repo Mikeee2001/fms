@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\GoodsReceiptItem;
 use App\Models\PurchaseOrder;
 use App\Models\RawMaterial;
 use Illuminate\Database\Eloquent\Model;
@@ -30,4 +31,10 @@ class PurchaseOrderItem extends Model
     {
         return $this->belongsTo(RawMaterial::class, 'raw_material_id');
     }
+
+    public function receiptItems()
+    {
+        return $this->hasMany(GoodsReceiptItem::class);
+    }
+
 }

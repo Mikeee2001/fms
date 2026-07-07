@@ -25,9 +25,16 @@ class SupplierNewPurchaseOrderNotification extends Notification
     {
         return [
             'title' => 'New Purchase Order',
+
+            'message' => 'A new purchase order has been submitted.',
+
             'po_id' => $this->po->id,
+
             'po_number' => $this->po->po_number,
-            'total' => $this->po->total_amount,
+
+            'status' => $this->po->status,
+
+            'total_amount' => $this->po->total_amount,
         ];
     }
 }

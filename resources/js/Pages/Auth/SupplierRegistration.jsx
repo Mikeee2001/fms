@@ -4,6 +4,7 @@ import { Building2, User, Phone, Mail, MapPin, Lock, Eye, EyeOff, ArrowRight } f
 import GuestLayout from '@/Layouts/GuestLayout';
 import InputLabel from '@/Components/InputLabel';
 import axios from 'axios';
+import SupplierMap from "@/Components/SupplierAddressMap";
 
 export default function RegisterSupplier() {
     const [step, setStep] = useState(1);
@@ -22,36 +23,43 @@ export default function RegisterSupplier() {
         contact_person: '',
         contact_number: '',
         address: '',
+        latitude: '',
+        longitude: '',
         company_logo: null,
     });
 
     const inputClasses =
-        "w-full pl-10 pr-10 py-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none";
+        "w-full h-12 rounded-lg border border-gray-300 bg-white text-black placeholder:text-gray-400 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500";
 
     const companyFields = [
         {
-            label: 'Company Name',
-            id: 'company_name',
+            label: "Company Name",
+            id: "company_name",
             icon: Building2,
-            placeholder: 'Enter company name',
+            placeholder: "Enter company name",
+            type: "text",
         },
         {
-            label: 'Contact Person',
-            id: 'contact_person',
+            label: "Contact Person",
+            id: "contact_person",
             icon: User,
-            placeholder: 'Enter contact person',
+            placeholder: "Enter contact person",
+            type: "text",
         },
         {
-            label: 'Contact Number',
-            id: 'contact_number',
+            label: "Contact Number",
+            id: "contact_number",
             icon: Phone,
-            placeholder: '9123456789',
+            placeholder: "9123456789",
+            type: "tel",
         },
         {
-            label: 'Address',
-            id: 'address',
+            label: "Selected Address",
+            id: "address",
             icon: MapPin,
-            placeholder: 'Enter company address',
+            placeholder: "Search or drag the marker",
+            type: "textarea",
+            readOnly: true,
         },
     ];
 
@@ -148,8 +156,8 @@ export default function RegisterSupplier() {
         <GuestLayout>
             <Head title="Supplier Registration" />
 
-            <div className="min-h-screen flex items-center justify-center bg-gray-100 py-10 px-4">
-                <div className="w-full max-w-lg bg-white rounded-2xl border border-gray-200 shadow-sm p-8">
+            <div className="flex justify-center px-4 py-6">
+                <div className="max-w-4xl w-full bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
 
                     {/* HEADER */}
                     <div className="text-center mb-8">
@@ -177,223 +185,331 @@ export default function RegisterSupplier() {
 
                         {/* STEP 1 */}
                         {step === 1 && (
-                            <div className="space-y-4">
+                            <div className="grid lg:grid-cols-2 gap-6">
 
-                                {/* EMAIL */}
-                                <div>
-                                    <InputLabel value="Email" />
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                                        <input
-                                            type="email"
-                                            value={data.email}
-                                            placeholder='Enter email'
-                                            onChange={(e) =>
-                                                setData('email', e.target.value)
-                                            }
-                                            className={inputClasses}
-                                        />
-                                    </div>
-                                    {localErrors.email && (
-                                        <p className="text-red-500 text-xs">{localErrors.email}</p>
-                                    )}
-                                </div>
+                                {/* LEFT */}
+                                <div className="bg-white border rounded-xl p-6 shadow-sm space-y-5">
 
-                                {/* PASSWORD */}
-                                <div>
-                                    <InputLabel value="Password" />
+                                    {/* Email */}
+                                    <div>
+                                        <InputLabel value="Email Address" />
 
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                                        <div className="relative mt-1">
+                                            <Mail
+                                                size={20}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                                            />
 
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={data.password}
-                                            placeholder="Enter password"
-                                            onChange={(e) => setData('password', e.target.value)}
-                                            className={inputClasses}
-                                        />
+                                            <input
+                                                type="email"
+                                                value={data.email}
+                                                onChange={(e) => setData("email", e.target.value)}
+                                                placeholder="Enter your email"
+                                                className={inputClasses}
+                                            />
+                                        </div>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-3 text-gray-500"
-                                        >
-                                            {showPassword ? (
-                                                <EyeOff className="w-5 h-5" />
-                                            ) : (
-                                                <Eye className="w-5 h-5" />
-                                            )}
-                                        </button>
+                                        {localErrors.email && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {localErrors.email}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    {localErrors.password && (
-                                        <p className="text-red-500 text-xs">{localErrors.password}</p>
-                                    )}
-                                </div>
+                                    {/* Password */}
+                                    <div>
+                                        <InputLabel value="Password" />
 
-                                {/* CONFIRM PASSWORD */}
-                                <div>
-                                    <InputLabel value="Confirm Password" />
+                                        <div className="relative mt-1">
+                                            <Lock
+                                                size={20}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                                            />
 
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                value={data.password}
+                                                onChange={(e) => setData("password", e.target.value)}
+                                                placeholder="Enter password"
+                                                className={inputClasses}
+                                            />
 
-                                        <input
-                                            type={showConfirmPassword ? 'text' : 'password'}
-                                            placeholder="Enter confirm password"
-                                            value={data.password_confirmation}
-                                            onChange={(e) =>
-                                                setData('password_confirmation', e.target.value)
-                                            }
-                                            className={inputClasses}
-                                        />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-500"
+                                            >
+                                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                            </button>
+                                        </div>
 
-                                        {/* 👁️ EYE ICON ADDED HERE */}
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-3 text-gray-500"
-                                        >
-                                            {showConfirmPassword ? (
-                                                <EyeOff className="w-5 h-5" />
-                                            ) : (
-                                                <Eye className="w-5 h-5" />
-                                            )}
-                                        </button>
+                                        {localErrors.password && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {localErrors.password}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    {localErrors.password_confirmation && (
-                                        <p className="text-red-500 text-xs">
-                                            {localErrors.password_confirmation}
-                                        </p>
-                                    )}
+                                    {/* Confirm Password */}
+                                    <div>
+                                        <InputLabel value="Confirm Password" />
+
+                                        <div className="relative mt-1">
+                                            <Lock
+                                                size={20}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                                            />
+
+                                            <input
+                                                type={showConfirmPassword ? "text" : "password"}
+                                                value={data.password_confirmation}
+                                                onChange={(e) =>
+                                                    setData("password_confirmation", e.target.value)
+                                                }
+                                                placeholder="Confirm password"
+                                                className={inputClasses}
+                                            />
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setShowConfirmPassword(!showConfirmPassword)
+                                                }
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-orange-500"
+                                            >
+                                                {showConfirmPassword ? (
+                                                    <EyeOff size={20} />
+                                                ) : (
+                                                    <Eye size={20} />
+                                                )}
+                                            </button>
+                                        </div>
+
+                                        {localErrors.password_confirmation && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {localErrors.password_confirmation}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleNext}
+                                        className="w-full bg-black hover:bg-gray-900 text-white py-3 rounded-lg"
+                                    >
+                                        Continue
+                                    </button>
+
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={handleNext}
-                                    className="w-full bg-black text-white py-3 rounded-lg flex justify-center items-center gap-2"
-                                >
-                                    Continue <ArrowRight className="w-4 h-4" />
-                                </button>
+                                {/* RIGHT */}
+                                <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+
+                                    <div className="bg-gray-100 px-4 py-3 border-b">
+                                        <h3 className="font-semibold text-gray-700">
+                                            Select Supplier Address
+                                        </h3>
+                                    </div>
+
+                                    <SupplierMap
+                                        latitude={data.latitude}
+                                        longitude={data.longitude}
+                                        onChange={(location) => {
+                                            setData("address", location.address);
+                                            setData("latitude", location.latitude);
+                                            setData("longitude", location.longitude);
+                                        }}
+                                    />
+
+                                </div>
+
                             </div>
                         )}
 
                         {/* STEP 2 */}
-                        {/* STEP 2 */}
                         {step === 2 && (
-                            <div className="space-y-4">
+                            <div className="grid lg:grid-cols-2 gap-6">
 
-                                {/* LOGO */}
-                                <div>
-                                    <InputLabel value="Company Logo" />
+                                {/* LEFT SIDE FORM DATA */}
+                                <div className="bg-white border rounded-xl shadow-sm p-6 space-y-5">
 
-                                    <input
-                                        type="file"
-                                        onChange={handleImageChange}
-                                        className="w-full border rounded-lg p-2"
-                                        accept="image/*"
-                                    />
+                                    {/* Company Logo */}
+                                    <div>
+                                        <InputLabel value="Company Logo" />
 
-                                    {preview && (
-                                        <img
-                                            src={preview}
-                                            className="h-24 w-24 object-cover rounded mt-2"
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="w-full border rounded-lg p-2"
                                         />
-                                    )}
-                                </div>
 
-                                {/* COMPANY FIELDS */}
-                                {companyFields.map((field) => (
-                                    <div key={field.id}>
-                                        <InputLabel value={field.label} />
-
-                                        {/* ✅ CONTACT NUMBER WITH +63 */}
-                                        {field.id === 'contact_number' ? (
-                                            <div className="flex">
-                                                {/* +63 PREFIX */}
-                                                <span className="flex items-center px-3 border border-r-0 rounded-l-lg bg-gray-100 text-gray-700">
-                                                    +63
-                                                </span>
-
-                                                <input
-                                                    type="tel"
-                                                    value={data.contact_number}
-                                                    placeholder="9123456789"
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'contact_number',
-                                                            e.target.value
-                                                                .replace(/\D/g, '') // numbers only
-                                                                .slice(0, 10) // max 10 digits
-                                                        )
-                                                    }
-                                                    className="w-full py-2 border rounded-r-lg text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="relative">
-                                                <field.icon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-
-                                                <input
-                                                    value={data[field.id]}
-                                                    onChange={(e) =>
-                                                        setData(field.id, e.target.value)
-                                                    }
-                                                    placeholder={field.placeholder}
-                                                    className={inputClasses}
-                                                />
-                                            </div>
+                                        {preview && (
+                                            <img
+                                                src={preview}
+                                                alt="Company Logo Preview"
+                                                className="mt-3 h-24 w-24 rounded-lg object-cover border"
+                                            />
                                         )}
+                                    </div>
 
-                                        {/* ERROR MESSAGE */}
-                                        {localErrors[field.id] && (
-                                            <p className="text-red-500 text-xs mt-1">
-                                                {localErrors[field.id]}
+
+                                    {/* Company Name */}
+                                    <div>
+                                        <InputLabel value="Company Name" />
+
+                                        <div className="relative mt-1">
+                                            <Building2
+                                                size={20}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                                            />
+
+                                            <input
+                                                value={data.company_name}
+                                                onChange={(e) =>
+                                                    setData("company_name", e.target.value)
+                                                }
+                                                placeholder="Company Name"
+                                                className={inputClasses}
+                                            />
+                                        </div>
+
+                                        {localErrors.company_name && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {localErrors.company_name}
                                             </p>
                                         )}
                                     </div>
-                                ))}
 
-                                {/* BUTTONS */}
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="w-full bg-orange-500 text-white py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-70"
-                                >
-                                    {processing && (
-                                        <svg
-                                            className="w-5 h-5 animate-spin"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                                fill="none"
+
+                                    {/* Contact Person */}
+                                    <div>
+                                        <InputLabel value="Contact Person" />
+
+                                        <div className="relative mt-1">
+                                            <User
+                                                size={20}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
                                             />
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8v8H4z"
+
+                                            <input
+                                                value={data.contact_person}
+                                                onChange={(e) =>
+                                                    setData("contact_person", e.target.value)
+                                                }
+                                                placeholder="Contact Person"
+                                                className={inputClasses}
                                             />
-                                        </svg>
-                                    )}
+                                        </div>
 
-                                    {processing ? 'Creating...' : 'Create Account'}
-                                </button>
+                                    </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => setStep(1)}
-                                    className="w-full bg-black text-white py-3 rounded-lg"
-                                >
-                                    Back
-                                </button>
+
+                                    {/* Contact Number */}
+                                    <div>
+                                        <InputLabel value="Contact Number" />
+
+                                        <div className="flex mt-1">
+                                            <span className="px-4 flex items-center border border-r-0 rounded-l-lg bg-white text-black font-semibold">
+                                                +63
+                                            </span>
+
+                                            <input
+                                                type="tel"
+                                                value={data.contact_number}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "contact_number",
+                                                        e.target.value.replace(/\D/g, "").slice(0, 10)
+                                                    )
+                                                }
+                                                placeholder="9123456789"
+                                                className="w-full h-12 px-4 border rounded-r-lg text-black font-medium placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+
+
+
+
+                                    {/* Address Display */}
+                                    <div>
+                                        <InputLabel value="Selected Address" />
+                                        <textarea
+                                            rows={4}
+                                            value={data.address}
+                                            readOnly
+                                            className="
+                                            w-full
+                                            rounded-lg
+                                            border
+                                            border-gray-300
+                                            bg-white
+                                            text-black
+                                            p-3
+                                            resize-none
+                                            focus:outline-none
+                                        "
+                                        />
+                                    </div>
+
+
+
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg"
+                                    >
+                                        {processing ? "Creating..." : "Create Account"}
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep(1)}
+                                        className="w-full bg-gray-900 hover:bg-black text-white py-3 rounded-lg"
+                                    >
+                                        Back
+                                    </button>
+
+
+                                </div>
+
+
+
+                                {/* RIGHT SIDE MAP */}
+                                <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+
+                                    <div className="bg-gray-100 px-4 py-3 border-b">
+                                        <h3 className="font-semibold text-gray-700">
+                                            Select Supplier Location
+                                        </h3>
+                                    </div>
+
+
+                                    <SupplierMap
+                                        latitude={data.latitude}
+                                        longitude={data.longitude}
+                                        onChange={(location) => {
+
+                                            setData("address", location.address);
+
+                                            setData(
+                                                "latitude",
+                                                location.latitude
+                                            );
+
+                                            setData(
+                                                "longitude",
+                                                location.longitude
+                                            );
+
+                                        }}
+                                    />
+
+                                </div>
+
+
                             </div>
                         )}
 

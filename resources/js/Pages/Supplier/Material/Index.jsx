@@ -304,278 +304,280 @@ export default function Index() {
 
                 {/* Table */}
                 <div className="bg-black border border-stone-800 rounded-xl overflow-hidden">
-                    <table className="min-w-full divide-y divide-stone-800">
-                        <thead className="bg-stone-900">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Material Image
-                                </th>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-[1400px] w-full divide-y divide-stone-800">
+                            <thead className="bg-stone-900">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Material Image
+                                    </th>
 
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Material Name
-                                </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Material Name
+                                    </th>
 
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Category
-                                </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Category
+                                    </th>
 
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Unit
-                                </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Unit
+                                    </th>
 
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Price
-                                </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Price
+                                    </th>
 
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Stock
-                                </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Stock
+                                    </th>
 
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Minimum
-                                </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Minimum
+                                    </th>
 
 
-                                <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                    Status
-                                </th>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Status
+                                    </th>
 
-                                <th className="px-6 py-4 text-center text-sm font-semibold text-stone-300">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-stone-300">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
 
-                        <tbody className="divide-y divide-stone-800">
-                            {materials.data.length > 0 ? (
-                                materials.data.map((material) => {
-                                    const stock =
-                                        material.inventory?.current_stock ?? 0;
+                            <tbody className="divide-y divide-stone-800">
+                                {materials.data.length > 0 ? (
+                                    materials.data.map((material) => {
+                                        const stock =
+                                            material.inventory?.current_stock ?? 0;
 
-                                    const minimum =
-                                        material.inventory?.minimum_stock ?? 0;
+                                        const minimum =
+                                            material.inventory?.minimum_stock ?? 0;
 
-                                    return (
-                                        <tr
-                                            key={material.id}
-                                            className="hover:bg-stone-900 transition"
-                                        >
-                                            <td className="px-6 py-4">
-                                                {material.images?.length > 0 ? (
-                                                    <img
-                                                        src={`/storage/${material.images[0].image_path}`}
-                                                        alt={material.material_name}
-                                                        className="w-14 h-14 rounded-lg object-cover border border-stone-700"
-                                                    />
-                                                ) : (
-                                                    <div className="w-14 h-14 rounded-lg bg-stone-800 flex items-center justify-center">
-                                                        <Package
-                                                            size={20}
-                                                            className="text-stone-500"
+                                        return (
+                                            <tr
+                                                key={material.id}
+                                                className="hover:bg-stone-900 transition"
+                                            >
+                                                <td className="px-6 py-4">
+                                                    {material.images?.length > 0 ? (
+                                                        <img
+                                                            src={`/storage/${material.images[0].image_path}`}
+                                                            alt={material.material_name}
+                                                            className="w-14 h-14 rounded-lg object-cover border border-stone-700"
                                                         />
-                                                    </div>
-                                                )}
-                                            </td>
-
-                                            {/* MATERIAL */}
-                                            <td className="px-6 py-4 font-medium text-white">
-                                                {material.material_name}
-                                            </td>
-
-                                            {/* CATEGORY */}
-                                            <td className="px-6 py-4 text-stone-300">
-                                                {material.category?.raw_category_name ?? "-"}
-                                            </td>
-
-                                            {/* UNIT */}
-                                            <td className="px-6 py-4 text-stone-300">
-                                                {material.unit?.name ?? "-"}
-                                            </td>
-
-                                            {/* PRICE */}
-                                            <td className="px-6 py-4 text-emerald-400 font-medium">
-                                                ₱{Number(material.purchase_price).toFixed(2)}
-                                            </td>
-
-                                            {/* STOCK */}
-                                            <td className="px-6 py-4">
-                                                <div className="text-white font-semibold">
-                                                    {Number(material.inventory?.current_stock ?? 0)}
-                                                </div>
-
-                                                {material.inventory?.stock_status === "low_stock" && (
-                                                    <span className="text-xs text-red-400">Low Stock</span>
-                                                )}
-
-                                                {material.inventory?.stock_status === "out_of_stock" && (
-                                                    <span className="text-xs text-gray-400">Out of Stock</span>
-                                                )}
-
-                                                {material.inventory?.stock_status === "in_stock" && (
-                                                    <span className="text-xs text-green-400">In Stock</span>
-                                                )}
-                                            </td>
-
-                                            {/* MINIMUM */}
-                                            <td className="px-6 py-4 text-stone-300">
-                                                {material.inventory?.minimum_stock ?? 0}
-                                            </td>
-
-                                            {/* STATUS TOGGLE */}
-                                            <td className="px-6 py-4">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const newStatus = material.is_active ? 0 : 1;
-
-                                                        router.put(
-                                                            route("supplier.materials.updateStatus", material.id),
-                                                            { is_active: newStatus },
-                                                            {
-                                                                preserveScroll: true,
-                                                                preserveState: true,
-                                                                onSuccess: () => {
-                                                                    router.reload({ only: ["materials"] });
-                                                                },
-                                                            }
-                                                        );
-                                                    }}
-                                                    className={`relative inline-flex h-7 w-20 items-center rounded-full transition-colors duration-300 ${material.is_active ? "bg-green-500" : "bg-red-500"
-                                                        }`}
-                                                >
-                                                    <span
-                                                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${material.is_active ? "translate-x-14" : "translate-x-1"
-                                                            }`}
-                                                    />
-
-                                                    <span
-                                                        className={`absolute text-[11px] font-semibold text-white ${material.is_active ? "left-2" : "right-2"
-                                                            }`}
-                                                    >
-                                                        {material.is_active ? "Active" : "Inactive"}
-                                                    </span>
-                                                </button>
-                                            </td>
-
-                                            {/* ACTION */}
-                                            <td className="px-6 py-4">
-                                                <div className="flex justify-center gap-3">
-
-                                                    {isArchivedView ? (
-                                                        <>
-                                                            <button
-                                                                onClick={() => restoreMaterial(material)}
-                                                                className="p-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition"
-                                                                title="Restore Material"
-                                                            >
-                                                                <RotateCcw size={18} />
-                                                            </button>
-
-                                                            <button
-                                                                onClick={() => forceDeleteMaterial(material)}
-                                                                className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition"
-                                                                title="Delete Permanently"
-                                                            >
-                                                                <Trash2 size={18} />
-                                                            </button>
-                                                        </>
                                                     ) : (
-                                                        <>
-                                                            <button
-                                                                onClick={() => openStockModal(material)}
-                                                                className="p-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition"
-                                                                title="Add Stock"
-                                                            >
-                                                                <PlusCircle size={18} />
-                                                            </button>
-                                                            <Link
-                                                                href={route("supplier.materials.show", material.id)}
-                                                                className="p-2 rounded-lg bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white transition"
-                                                            >
-                                                                <Eye size={18} />
-                                                            </Link>
+                                                        <div className="w-14 h-14 rounded-lg bg-stone-800 flex items-center justify-center">
+                                                            <Package
+                                                                size={20}
+                                                                className="text-stone-500"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </td>
 
-                                                            <button
-                                                                onClick={() => archiveMaterial(material)}
-                                                                className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition"
-                                                            >
-                                                                <Archive size={18} />
-                                                            </button>
-                                                        </>
+                                                {/* MATERIAL */}
+                                                <td className="px-6 py-4 font-medium text-white">
+                                                    {material.material_name}
+                                                </td>
+
+                                                {/* CATEGORY */}
+                                                <td className="px-6 py-4 text-stone-300">
+                                                    {material.category?.raw_category_name ?? "-"}
+                                                </td>
+
+                                                {/* UNIT */}
+                                                <td className="px-6 py-4 text-stone-300">
+                                                    {material.unit?.name ?? "-"}
+                                                </td>
+
+                                                {/* PRICE */}
+                                                <td className="px-6 py-4 text-emerald-400 font-medium">
+                                                    ₱{Number(material.purchase_price).toFixed(2)}
+                                                </td>
+
+                                                {/* STOCK */}
+                                                <td className="px-6 py-4">
+                                                    <div className="text-white font-semibold">
+                                                        {Number(material.inventory?.current_stock ?? 0)}
+                                                    </div>
+
+                                                    {material.inventory?.stock_status === "low_stock" && (
+                                                        <span className="text-xs text-red-400">Low Stock</span>
                                                     )}
 
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            ) : (
-                                <tr>
-                                    <td colSpan={8}>
-                                        <div className="px-6 py-12 text-center">
-                                            <svg
-                                                className="mx-auto h-12 w-12 text-stone-500"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                />
-                                            </svg>
+                                                    {material.inventory?.stock_status === "out_of_stock" && (
+                                                        <span className="text-xs text-gray-400">Out of Stock</span>
+                                                    )}
 
-                                            <h3 className="mt-2 text-sm font-medium text-white">
-                                                No materials found
-                                            </h3>
+                                                    {material.inventory?.stock_status === "in_stock" && (
+                                                        <span className="text-xs text-green-400">In Stock</span>
+                                                    )}
+                                                </td>
 
-                                            <p className="mt-1 text-sm text-stone-400">
-                                                No materials match your current
-                                                filter.
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                                                {/* MINIMUM */}
+                                                <td className="px-6 py-4 text-stone-300">
+                                                    {material.inventory?.minimum_stock ?? 0}
+                                                </td>
 
-                    {/* Pagination */}
-                    {materials.last_page > 1 && (
-                        <div className="flex justify-center items-center gap-3 border-t border-stone-800 p-4">
-                            <Link
-                                href={materials.prev_page_url || "#"}
-                                preserveScroll
-                                preserveState
-                                only={["materials", "filters"]}
-                                className={`px-4 py-2 rounded-lg ${materials.prev_page_url
-                                    ? "bg-stone-900 hover:bg-stone-800 text-white"
-                                    : "bg-stone-900 text-stone-600 pointer-events-none"
-                                    }`}
-                            >
-                                Previous
-                            </Link>
+                                                {/* STATUS TOGGLE */}
+                                                <td className="px-6 py-4">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newStatus = material.is_active ? 0 : 1;
 
-                            <span className="px-4 py-2 rounded-lg bg-amber-600 text-white">
-                                {materials.current_page}
-                            </span>
+                                                            router.put(
+                                                                route("supplier.materials.updateStatus", material.id),
+                                                                { is_active: newStatus },
+                                                                {
+                                                                    preserveScroll: true,
+                                                                    preserveState: true,
+                                                                    onSuccess: () => {
+                                                                        router.reload({ only: ["materials"] });
+                                                                    },
+                                                                }
+                                                            );
+                                                        }}
+                                                        className={`relative inline-flex h-7 w-20 items-center rounded-full transition-colors duration-300 ${material.is_active ? "bg-green-500" : "bg-red-500"
+                                                            }`}
+                                                    >
+                                                        <span
+                                                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${material.is_active ? "translate-x-14" : "translate-x-1"
+                                                                }`}
+                                                        />
 
-                            <Link
-                                href={materials.next_page_url || "#"}
-                                preserveScroll
-                                preserveState
-                                only={["materials", "filters"]}
-                                className={`px-4 py-2 rounded-lg ${materials.next_page_url
-                                    ? "bg-stone-900 hover:bg-stone-800 text-white"
-                                    : "bg-stone-900 text-stone-600 pointer-events-none"
-                                    }`}
-                            >
-                                Next
-                            </Link>
-                        </div>
-                    )}
+                                                        <span
+                                                            className={`absolute text-[11px] font-semibold text-white ${material.is_active ? "left-2" : "right-2"
+                                                                }`}
+                                                        >
+                                                            {material.is_active ? "Active" : "Inactive"}
+                                                        </span>
+                                                    </button>
+                                                </td>
+
+                                                {/* ACTION */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex justify-center gap-3">
+
+                                                        {isArchivedView ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => restoreMaterial(material)}
+                                                                    className="p-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition"
+                                                                    title="Restore Material"
+                                                                >
+                                                                    <RotateCcw size={18} />
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={() => forceDeleteMaterial(material)}
+                                                                    className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition"
+                                                                    title="Delete Permanently"
+                                                                >
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => openStockModal(material)}
+                                                                    className="p-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white transition"
+                                                                    title="Add Stock"
+                                                                >
+                                                                    <PlusCircle size={18} />
+                                                                </button>
+                                                                <Link
+                                                                    href={route("supplier.materials.show", material.id)}
+                                                                    className="p-2 rounded-lg bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white transition"
+                                                                >
+                                                                    <Eye size={18} />
+                                                                </Link>
+
+                                                                <button
+                                                                    onClick={() => archiveMaterial(material)}
+                                                                    className="p-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white transition"
+                                                                >
+                                                                    <Archive size={18} />
+                                                                </button>
+                                                            </>
+                                                        )}
+
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                ) : (
+                                    <tr>
+                                        <td colSpan={8}>
+                                            <div className="px-6 py-12 text-center">
+                                                <svg
+                                                    className="mx-auto h-12 w-12 text-stone-500"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                    />
+                                                </svg>
+
+                                                <h3 className="mt-2 text-sm font-medium text-white">
+                                                    No materials found
+                                                </h3>
+
+                                                <p className="mt-1 text-sm text-stone-400">
+                                                    No materials match your current
+                                                    filter.
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+
+                        {/* Pagination */}
+                        {materials.last_page > 1 && (
+                            <div className="flex justify-center items-center gap-3 border-t border-stone-800 p-4">
+                                <Link
+                                    href={materials.prev_page_url || "#"}
+                                    preserveScroll
+                                    preserveState
+                                    only={["materials", "filters"]}
+                                    className={`px-4 py-2 rounded-lg ${materials.prev_page_url
+                                        ? "bg-stone-900 hover:bg-stone-800 text-white"
+                                        : "bg-stone-900 text-stone-600 pointer-events-none"
+                                        }`}
+                                >
+                                    Previous
+                                </Link>
+
+                                <span className="px-4 py-2 rounded-lg bg-amber-600 text-white">
+                                    {materials.current_page}
+                                </span>
+
+                                <Link
+                                    href={materials.next_page_url || "#"}
+                                    preserveScroll
+                                    preserveState
+                                    only={["materials", "filters"]}
+                                    className={`px-4 py-2 rounded-lg ${materials.next_page_url
+                                        ? "bg-stone-900 hover:bg-stone-800 text-white"
+                                        : "bg-stone-900 text-stone-600 pointer-events-none"
+                                        }`}
+                                >
+                                    Next
+                                </Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

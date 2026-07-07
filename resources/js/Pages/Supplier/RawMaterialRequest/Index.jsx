@@ -1,119 +1,238 @@
 import SupplierLayout from "@/Layouts/SupplierLayout";
-import { Head } from "@inertiajs/react";
-import { ClipboardList, Package, User, AlertCircle } from "lucide-react";
+import { Head, Link } from "@inertiajs/react";
+import { ClipboardList, Eye } from "lucide-react";
+import { useState } from "react";
 
-export default function Index({ draftRequests }) {
+export default function Index({ requests = [] }) {
+    const [statusFilter, setStatusFilter] = useState("all");
+
+    const filteredRequests =
+        statusFilter === "all"
+            ? requests.data
+            : requests.data.filter(
+                (request) => request.status === statusFilter
+            );
+
     return (
         <SupplierLayout>
             <Head title="Raw Material Requests" />
 
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+            <div className="p-6">
+                {/* Header */}
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-white">
+                        Raw Material Requests
+                    </h1>
 
-                {/* HEADER */}
-                <div className="mb-8 flex items-center gap-3">
-                    <div className="p-3 bg-indigo-600 rounded-xl shadow">
-                        <ClipboardList className="w-6 h-6 text-white" />
-                    </div>
-
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">
-                            Raw Material Requests
-                        </h1>
-                        <p className="text-gray-500 text-sm">
-                            Manage incoming purchase orders from managers
-                        </p>
-                    </div>
+                    <p className="text-stone-400 mt-1">
+                        View incoming purchase requests from managers.
+                    </p>
                 </div>
 
-                {/* EMPTY STATE */}
-                {draftRequests.length === 0 ? (
-                    <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-200">
+                {/* Status Filters */}
+                <div className="flex gap-3 mb-6 flex-wrap">
+                    {[
+                        "all",
+                        "pending",
+                        "approved",
+                        "partially received",
+                        "shipped",
+                        "received",
+                    ].map((status) => (
+                        <button
+                            key={status}
+                            onClick={() => setStatusFilter(status)}
+                            className={`px-4 py-2 rounded-lg capitalize transition ${statusFilter === status
+                                ? "bg-amber-600 text-white"
+                                : "bg-stone-800 text-stone-300 hover:bg-stone-700"
+                                }`}
+                        >
+                            {status}
+                        </button>
+                    ))}
+                </div>
 
-                        <AlertCircle className="w-14 h-14 text-gray-300 mx-auto mb-4" />
+                {/* Table */}
+                <div className="bg-black border border-stone-800 rounded-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-stone-800">
+                            <thead className="bg-stone-900">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        PO Number
+                                    </th>
 
-                        <h2 className="text-xl font-bold text-gray-800">
-                            No Requests Yet
-                        </h2>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Manager
+                                    </th>
 
-                        <p className="text-gray-500 mt-2">
-                            Incoming purchase orders will appear here once managers place them.
-                        </p>
-                    </div>
-                ) : (
-                    <div className="grid gap-5 md:grid-cols-2">
+                                    {/* <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Supplier
+                                    </th> */}
 
-                        {draftRequests.map((po) => (
-                            <div
-                                key={po.id}
-                                className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition p-6 border border-gray-100"
-                            >
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Items
+                                    </th>
 
-                                {/* TOP */}
-                                <div className="flex justify-between items-start mb-4">
-
-                                    <div className="flex gap-3">
-
-                                        <div className="p-2 bg-indigo-50 rounded-lg">
-                                            <Package className="w-5 h-5 text-indigo-600" />
-                                        </div>
-
-                                        <div>
-                                            <h2 className="font-bold text-gray-900 text-lg">
-                                                {po.po_number}
-                                            </h2>
-
-                                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                <User className="w-4 h-4" />
-                                                {po.manager?.user?.name ?? "Unknown"}
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
-                                        {po.status}
-                                    </span>
-
-                                </div>
-
-                                {/* ITEMS */}
-                                <div className="space-y-2 border-t pt-4">
-
-                                    {po.items.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex justify-between text-sm text-gray-700"
-                                        >
-                                            <span className="font-medium">
-                                                {item.rawMaterial?.material_name ?? "Unknown Item"}
-                                            </span>
-
-                                            <span className="text-gray-900 font-semibold">
-                                                {item.quantity} × ₱{item.unit_price}
-                                            </span>
-                                        </div>
-                                    ))}
-
-                                </div>
-
-                                {/* FOOTER */}
-                                <div className="mt-5 flex justify-between items-center border-t pt-4">
-
-                                    <span className="text-gray-500 text-sm">
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
                                         Total Amount
-                                    </span>
+                                    </th>
 
-                                    <span className="text-lg font-bold text-gray-900">
-                                        ₱{po.total_amount}
-                                    </span>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Status
+                                    </th>
 
-                                </div>
+                                    <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
+                                        Request Date
+                                    </th>
 
+                                    <th className="px-6 py-4 text-center text-sm font-semibold text-stone-300">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="divide-y divide-stone-800">
+                                {filteredRequests.length > 0 ? (
+                                    filteredRequests.map((request) => (
+                                        <tr
+                                            key={request.id}
+                                            className="hover:bg-stone-900 transition"
+                                        >
+                                            {/* PO Number */}
+                                            <td className="px-6 py-4 text-white font-medium">
+                                                {request.po_number}
+                                            </td>
+
+                                            {/* Manager */}
+                                            <td className="px-6 py-4 text-stone-300">
+                                                {request.manager?.user?.name ??
+                                                    "Unknown"}
+                                            </td>
+
+                                            {/* Supplier */}
+                                            {/* <td className="px-6 py-4 text-stone-300">
+                                                {request.supplier
+                                                    ?.company_name ?? "-"}
+                                            </td> */}
+
+                                            {/* Items Count */}
+                                            <td className="px-6 py-4 text-stone-300">
+                                                {request.items?.length ?? 0}
+                                            </td>
+
+                                            {/* Total */}
+                                            <td className="px-6 py-4 text-emerald-400 font-semibold">
+                                                ₱
+                                                {Number(
+                                                    request.total_amount ?? 0
+                                                ).toLocaleString()}
+                                            </td>
+
+                                            {/* Status */}
+                                            <td className="px-6 py-4">
+                                                <span
+                                                    className={`px-3 py-1 rounded-full text-xs font-semibold ${request.status ===
+                                                        "pending"
+                                                        ? "bg-yellow-500/20 text-yellow-400"
+                                                        : request.status ===
+                                                            "approved"
+                                                            ? "bg-blue-500/20 text-blue-400"
+                                                            : request.status ===
+                                                                "shipped"
+                                                                ? "bg-purple-500/20 text-purple-400"
+                                                                : "bg-green-500/20 text-green-400"
+                                                        }`}
+                                                >
+                                                    {request.status}
+                                                </span>
+                                            </td>
+
+                                            {/* Date */}
+                                            <td className="px-6 py-4 text-stone-400">
+                                                {new Date(
+                                                    request.created_at
+                                                ).toLocaleDateString()}
+                                            </td>
+
+                                            {/* Actions */}
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center">
+                                                    <Link
+                                                        href={route(
+                                                            "supplier.raw-material-requests.show",
+                                                            request.id
+                                                        )}
+                                                        className="p-2 rounded-lg bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white transition"
+                                                        title="View Request"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="px-6 py-12"
+                                        >
+                                            <div className="text-center">
+                                                <ClipboardList
+                                                    size={48}
+                                                    className="mx-auto text-stone-500 mb-3"
+                                                />
+
+                                                <h3 className="text-white font-medium">
+                                                    No Requests Found
+                                                </h3>
+
+                                                <p className="text-stone-400 mt-1">
+                                                    No purchase requests match
+                                                    the selected filter.
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                        {requests.last_page > 1 && (
+                            <div className="flex justify-center items-center gap-3 border-t border-stone-800 p-4">
+                                <Link
+                                    href={requests.prev_page_url || "#"}
+                                    preserveScroll
+                                    preserveState
+                                    only={["requests"]}
+                                    className={`px-4 py-2 rounded-lg ${requests.prev_page_url
+                                        ? "bg-stone-900 hover:bg-stone-800 text-white"
+                                        : "bg-stone-900 text-stone-600 pointer-events-none"
+                                        }`}
+                                >
+                                    Previous
+                                </Link>
+
+                                <span className="px-4 py-2 rounded-lg bg-amber-600 text-white">
+                                    {requests.current_page}
+                                </span>
+
+                                <Link
+                                    href={requests.next_page_url || "#"}
+                                    preserveScroll
+                                    preserveState
+                                    only={["requests"]}
+                                    className={`px-4 py-2 rounded-lg ${requests.next_page_url
+                                        ? "bg-stone-900 hover:bg-stone-800 text-white"
+                                        : "bg-stone-900 text-stone-600 pointer-events-none"
+                                        }`}
+                                >
+                                    Next
+                                </Link>
                             </div>
-                        ))}
-
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </SupplierLayout>
     );

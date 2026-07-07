@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { Bell } from "lucide-react";
 import { router } from "@inertiajs/react";
 
-export default function SupplierNotificationDropdown({
+export default function ManagerNotificationDropdown({
     notifications = [],
     unread = 0,
     refresh,
@@ -15,27 +15,32 @@ export default function SupplierNotificationDropdown({
         if (loading) return;
 
         setLoading(true);
+
         try {
-            await axios.post("/supplier/notifications/mark-all-as-read");
+            await axios.post(
+                "/manager/notifications/mark-all-as-read"
+            );
+
             refresh?.();
+
         } finally {
             setLoading(false);
         }
     };
 
     const markAsRead = async (notif) => {
-        if (loading) return;
-
         try {
-            setLoading(true);
-
-            await axios.post("/supplier/notifications/mark-as-read", {
-                notification_id: notif.id,
-            });
+            await axios.post(
+                "/manager/notifications/mark-as-read",
+                {
+                    notification_id: notif.id,
+                }
+            );
 
             refresh?.();
-        } finally {
-            setLoading(false);
+
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -47,22 +52,12 @@ export default function SupplierNotificationDropdown({
         if (notif.po_id) {
             router.visit(
                 route(
-                    "supplier.purchase-orders.show",
+                    "manager.purchase-orders.show",
                     notif.po_id
                 )
-            );
+            )
         }
     };
-
-    useEffect(() => {
-
-    const interval = setInterval(() => {
-        refresh?.();
-    }, 5000); // every 5 seconds
-
-    return () => clearInterval(interval);
-
-}, []);
 
     return (
         <div className="relative">
@@ -95,9 +90,9 @@ export default function SupplierNotificationDropdown({
                             <button
                                 onClick={markAllAsRead}
                                 disabled={loading}
-                                className="text-xs text-amber-400 hover:text-amber-300 disabled:opacity-50"
+                                className="text-xs text-amber-400 hover:text-amber-300"
                             >
-                                {loading ? "Updating..." : "Mark all read"}
+                                Mark all read
                             </button>
                         )}
                     </div>
@@ -111,72 +106,35 @@ export default function SupplierNotificationDropdown({
                             </div>
                         ) : (
                             notifications.map((n) => {
-                                const isUnread = !n.read_at;
+                                const unreadItem = !n.read_at;
 
                                 return (
                                     <div
                                         key={n.id}
                                         onClick={() => handleClick(n)}
-                                        className={`group px-4 py-3 border-b border-stone-900 cursor-pointer transition hover:bg-stone-900/70 ${isUnread ? "bg-stone-900/40" : ""
+                                        className={`group px-4 py-3 border-b border-stone-900 cursor-pointer hover:bg-stone-900 transition ${unreadItem
+                                            ? "bg-stone-900/40"
+                                            : ""
                                             }`}
                                     >
-
-                                        {/* Message */}
-                                        <p className="text-sm text-white font-medium group-hover:text-amber-300 transition">
+                                        <p className="text-white text-sm font-medium">
                                             {n.message}
                                         </p>
 
                                         {n.status && (
-                                            <p className="text-xs text-sky-400">
+                                            <p className="text-xs text-sky-400 mt-1">
                                                 Status: {n.status}
                                             </p>
                                         )}
 
-                                        {n.total_amount && (
-                                            <p className="text-xs text-emerald-400">
-                                                Total: ₱{n.total_amount}
-                                            </p>
-                                        )}
-                                        {/* Details */}
-                                        {n.order_details && (
-                                            <div className="mt-2 text-xs text-stone-400 space-y-1">
-                                                <p>
-                                                    Supplier:{" "}
-                                                    <span className="text-white">
-                                                        {n.order_details.supplier_name}
-                                                    </span>
-                                                </p>
-
-                                                <p>
-                                                    Items:{" "}
-                                                    <span className="text-white">
-                                                        {n.order_details.total_items}
-                                                    </span>
-                                                </p>
-
-                                                <p>
-                                                    Total:{" "}
-                                                    <span className="text-emerald-400">
-                                                        ₱{n.order_details.total_amount}
-                                                    </span>
-                                                </p>
-
-                                                <p>
-                                                    Status:{" "}
-                                                    <span className="text-amber-400">
-                                                        {n.order_details.status}
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        )}
-
-                                        {/* Footer */}
                                         <div className="flex justify-between items-center mt-2">
                                             <p className="text-[11px] text-stone-500">
-                                                {new Date(n.created_at).toLocaleString()}
+                                                {new Date(
+                                                    n.created_at
+                                                ).toLocaleString()}
                                             </p>
 
-                                            {isUnread && (
+                                            {unreadItem && (
                                                 <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
                                             )}
                                         </div>

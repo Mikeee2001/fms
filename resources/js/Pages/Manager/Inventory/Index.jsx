@@ -14,14 +14,14 @@ import {
 
 export default function Index() {
 
-    const { materials = [] } = usePage().props;
+    const { materials } = usePage().props;
 
     const [search, setSearch] = useState('');
     const [category, setCategory] = useState('');
 
     // FILTER
     const filteredInventories = useMemo(() => {
-        return materials.filter((inv) => {
+        return materials.data.filter((inv) => {
             const material = inv.rawMaterial;
 
             if (!material) return false;
@@ -41,32 +41,25 @@ export default function Index() {
     // CATEGORY LIST
     const categories = [
         ...new Set(
-            materials
+            materials.data
                 .map(inv => inv.rawMaterial?.category?.raw_category_name)
                 .filter(Boolean)
         ),
     ];
 
-    // TOTAL VALUE
     const totalInventoryValue = filteredInventories.reduce((sum, inv) => {
         return (
             sum +
-            Number(inv.current_stock || 0) *
+            Number(inv.received_quantity || 0) *
             Number(inv.rawMaterial?.purchase_price || 0)
         );
     }, 0);
 
-    // LOW STOCK
-    const totalLowStock = filteredInventories.filter(
-        inv =>
-            Number(inv.current_stock) > 0 &&
-            Number(inv.current_stock) <= Number(inv.minimum_stock)
-    ).length;
+    const totalReceived = filteredInventories.reduce(
+        (sum, inv) => sum + Number(inv.received_quantity || 0),
+        0
+    );
 
-    // OUT OF STOCK
-    const totalOutOfStock = filteredInventories.filter(
-        inv => Number(inv.current_stock) <= 0
-    ).length;
 
     function Card({ title, value, icon, color }) {
         const colors = {
@@ -163,17 +156,17 @@ export default function Index() {
                     />
 
                     <Card
-                        title="Low Stock"
-                        value={totalLowStock}
-                        icon={<AlertTriangle size={22} />}
+                        title="Total Received Qty"
+                        value={totalReceived}
+                        icon={<Package size={22} />}
                         color="yellow"
                     />
 
                     <Card
-                        title="Out of Stock"
-                        value={totalOutOfStock}
-                        icon={<XCircle size={22} />}
-                        color="red"
+                        title="Completed Deliveries"
+                        value={filteredInventories.length}
+                        icon={<ClipboardList size={22} />}
+                        color="green"
                     />
 
                     <Card
@@ -226,18 +219,47 @@ export default function Index() {
 
                         <table className="w-full">
 
-                            <thead className="bg-stone-950">
-                                <tr className="text-left text-stone-300">
+                            <thead className="bg-stone-950 border-b border-stone-800">
+                                <tr>
+                                    <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Image
+                                    </th>
 
-                                    <th className="px-6 py-4">Material</th>
-                                    <th className="px-6 py-4">Category</th>
-                                    <th className="px-6 py-4">Supplier</th>
-                                    <th className="px-6 py-4">Unit Price</th>
-                                    <th className="px-6 py-4">Stock</th>
-                                    <th className="px-6 py-4">Min Stock</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-center">Actions</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Material
+                                    </th>
 
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Category
+                                    </th>
+
+                                    <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Supplier
+                                    </th>
+
+                                    <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Unit Price
+                                    </th>
+
+                                    <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Received Qty
+                                    </th>
+
+                                    <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Last Received
+                                    </th>
+
+                                    <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Status
+                                    </th>
+
+                                    <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Quantity
+                                    </th>
+
+                                    <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-stone-400">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
 
@@ -254,10 +276,24 @@ export default function Index() {
                                                     : "in";
 
                                         return (
+
                                             <tr
                                                 key={inv.id}
                                                 className="border-t border-stone-800 hover:bg-stone-800/50"
                                             >
+                                                <td className="px-6 py-4">
+                                                    {material?.primary_image ? (
+                                                        <img
+                                                            src={`/storage/${material.primary_image.image_path}`}
+                                                            alt={material.material_name}
+                                                            className="w-14 h-14 rounded-lg object-cover border border-stone-700"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-14 h-14 rounded-lg border border-dashed border-stone-700 flex items-center justify-center text-[10px] text-stone-500">
+                                                            No Image
+                                                        </div>
+                                                    )}
+                                                </td>
                                                 <td className="px-6 py-4 text-white font-medium">
                                                     {material?.material_name}
                                                 </td>
@@ -270,7 +306,7 @@ export default function Index() {
                                                     {material?.supplier?.company_name ?? "-"}
                                                 </td>
 
-                                                <td className="px-6 py-4 text-emerald-400">
+                                                <td className="px-6 py-4 text-right text-emerald-400 font-medium">
                                                     ₱
                                                     {Number(
                                                         material?.purchase_price || 0
@@ -279,50 +315,40 @@ export default function Index() {
                                                     })}
                                                 </td>
 
-                                                <td className="px-6 py-4 text-white">
-                                                    {inv.current_stock}
+                                                <td className="px-6 py-4 text-center text-sky-400 font-medium">
+                                                    {Number(inv.received_quantity)}
                                                     {material?.unit
-                                                        ? ` ${material.unit.unit_name}`
+                                                        ? ` ${material.unit.name}`
                                                         : ""}
                                                 </td>
 
-                                                <td className="px-6 py-4 text-stone-300">
-                                                    {inv.minimum_stock}
+                                                <td className="px-6 py-4 text-center text-stone-300">
+                                                    {inv.last_received_date
+                                                        ? new Date(inv.last_received_date).toLocaleDateString()
+                                                        : "-"}
                                                 </td>
 
                                                 <td className="px-6 py-4">
-                                                    <span
-                                                        className={`px-3 py-1 rounded-full text-xs border
-                            ${status === "in"
-                                                                ? "bg-green-500/20 text-green-400 border-green-600"
-                                                                : ""
-                                                            }
-                            ${status === "low"
-                                                                ? "bg-yellow-500/20 text-yellow-400 border-yellow-600"
-                                                                : ""
-                                                            }
-                            ${status === "out"
-                                                                ? "bg-red-500/20 text-red-400 border-red-600"
-                                                                : ""
-                                                            }`}
-                                                    >
-                                                        {status === "in"
-                                                            ? "In Stock"
-                                                            : status === "low"
-                                                                ? "Low Stock"
-                                                                : "Out of Stock"}
+                                                    <span className="px-3 py-1 rounded-full text-xs border bg-green-500/20 text-green-400 border-green-600">
+                                                        Delivered
                                                     </span>
                                                 </td>
 
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-6 py-4 text-sky-400">
+                                                    {Number(inv.received_quantity || 0) % 1 === 0
+                                                        ? parseInt(inv.received_quantity || 0)
+                                                        : Number(inv.received_quantity || 0)}
+                                                </td>
+
+                                                <td className="px-6 py-4 text-center whitespace-nowrap text-sm font-medium">
                                                     <Link
                                                         href={route(
-                                                            // "manager.inventory.show",
+                                                            "manager.inventory.show",
                                                             inv.id
                                                         )}
-                                                        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg text-white text-sm"
+                                                        className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-400 transition-colors"
                                                     >
-                                                        <Eye size={16} />
+                                                        {/* <Eye size={16} /> */}
                                                         View
                                                     </Link>
                                                 </td>
@@ -332,7 +358,7 @@ export default function Index() {
                                 ) : (
                                     <tr>
                                         <td
-                                            colSpan="8"
+                                            colSpan="10"
                                             className="py-16 text-center text-stone-500"
                                         >
                                             Inventory Empty
@@ -341,7 +367,44 @@ export default function Index() {
                                 )}
                             </tbody>
 
+
                         </table>
+
+                        {materials.last_page > 1 && (
+                            <div className="flex justify-center items-center gap-3 border-t border-stone-800 p-4">
+
+                                <Link
+                                    href={materials.prev_page_url || "#"}
+                                    preserveScroll
+                                    preserveState
+                                    only={["materials"]}
+                                    className={`px-4 py-2 rounded-lg ${materials.prev_page_url
+                                        ? "bg-stone-900 hover:bg-stone-800 text-white"
+                                        : "bg-stone-900 text-stone-600 pointer-events-none"
+                                        }`}
+                                >
+                                    Previous
+                                </Link>
+
+                                <span className="px-4 py-2 rounded-lg bg-blue-600 text-white">
+                                    {materials.current_page}
+                                </span>
+
+                                <Link
+                                    href={materials.next_page_url || "#"}
+                                    preserveScroll
+                                    preserveState
+                                    only={["materials"]}
+                                    className={`px-4 py-2 rounded-lg ${materials.next_page_url
+                                        ? "bg-stone-900 hover:bg-stone-800 text-white"
+                                        : "bg-stone-900 text-stone-600 pointer-events-none"
+                                        }`}
+                                >
+                                    Next
+                                </Link>
+
+                            </div>
+                        )}
 
                     </div>
 

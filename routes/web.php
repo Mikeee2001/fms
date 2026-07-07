@@ -13,7 +13,9 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\SupplierController;
+
 use App\Http\Controllers\Auth\SupplierRegisterController;
+
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
@@ -22,25 +24,31 @@ use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\ProfileController;
 
+
 use App\Http\Controllers\Delivery\DashboardController;
 
-use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
+
 use App\Http\Controllers\Manager\CartController as ManagerCartController;
+use App\Http\Controllers\Manager\CheckOutController as ManagerCheckOutController;
+use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
+use App\Http\Controllers\Manager\GoodsReceiptController;
+use App\Http\Controllers\Manager\ManagerNotificationController;
 use App\Http\Controllers\Manager\RawMaterialInventoryController;
 use App\Http\Controllers\Manager\RawMaterialPageController;
-use App\Http\Controllers\Manager\CheckOutController as ManagerCheckOutController;
+use App\Http\Controllers\Manager\PurchaseOrderController as ManagerPurchaseOrderController;
 
-
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\StaffPasswordController;
+
 
 use App\Http\Controllers\Supplier\DashboardController as SupplierDashboard;
 use App\Http\Controllers\Supplier\MaterialController as SupplierMaterialController;
 use App\Http\Controllers\Supplier\MaterialController as SupplierPaymentController;
 use App\Http\Controllers\Supplier\NotificationController as SupplierNotificaitonController;
-use App\Http\Controllers\Supplier\PaymentController;
-use App\Http\Controllers\Supplier\PurchaseOrderController;
+use App\Http\Controllers\Supplier\PurchaseOrderController as SupplierPurchaseOrderController;
 use App\Http\Controllers\Supplier\RawMaterialRequestController;
 use App\Http\Controllers\Supplier\SupplierProfileController;
+
 
 use App\Http\Controllers\WebhookController;
 use App\Models\User;
@@ -274,20 +282,25 @@ Route::middleware(['auth', 'role:supplier'])->prefix('supplier')->name('supplier
 
     Route::get('/raw-material', [RawMaterialRequestController::class, 'index'])->name('raw-material.index');
 
-    // Orders
-    Route::resource('purchase-orders', PurchaseOrderController::class);
+    // Ordersuse App\Http\Controllers\Supplier\PurchaseOrderController as SupplierPurchaseOrderController;
+
+    Route::resource('purchase-orders', SupplierPurchaseOrderController::class);
     // Payments
     Route::resource('payments', SupplierPaymentController::class);
     // Profile
     Route::resource('profile', SupplierProfileController::class);
 
+    // Route::get('/purchase-orders/{purchaseOrder}', [RawMaterialRequestController::class, 'show'])->name('purchase-orders.show');
 
-    Route::get('/notifications', [SupplierNotificaitonController::class, 'index'])
-        ->name('supplier.notifications.index');
+    Route::patch('/purchase-orders/{purchaseOrder}/status', [RawMaterialRequestController::class, 'updateStatus'])->name('purchase-orders.update-status');
+
+    Route::get('/notifications', [SupplierNotificaitonController::class, 'index'])->name('supplier.notifications.index');
+
     Route::post('/notifications/mark-as-read', [SupplierNotificaitonController::class, 'markAsRead'])->name('supplier.notifications.read');
 
-    Route::post('/notifications/mark-all-as-read', [SupplierNotificaitonController::class, 'markAllAsRead'])
-        ->name('supplier.notifications.markAllAsRead');
+    Route::post('/notifications/mark-all-as-read', [SupplierNotificaitonController::class, 'markAllAsRead'])->name('supplier.notifications.markAllAsRead');
+
+    Route::get('/raw-material-requests/{request}', [RawMaterialRequestController::class, 'show'])->name('raw-material-requests.show');
 
 
 });
@@ -296,26 +309,34 @@ Route::middleware(['auth', 'role:supplier'])->prefix('supplier')->name('supplier
 Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
 
     Route::get('/dashboard', [ManagerDashboardController::class, 'dashboard'])->name('dashboard');
-    Route::get('/inventory', [RawMaterialInventoryController::class, 'index'])->name('inventory');
+    Route::get('/inventory', [RawMaterialInventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory', [RawMaterialInventoryController::class, 'index'])->name('inventory.show');
+
     Route::get('/raw-materials', [RawMaterialPageController::class, 'index'])->name('raw-materials.index');
 
     // CART
     Route::get('/cart', [ManagerCartController::class, 'index'])->name('cart.index');
     Route::post('/cart', [ManagerCartController::class, 'store'])->name('cart.store');
     Route::patch('/cart/{id}', [ManagerCartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/clear', [ManagerCartController::class, 'clear'])
-        ->name('cart.clear');
+    Route::delete('/cart/clear', [ManagerCartController::class, 'clear'])->name('cart.clear');
+    Route::delete('/cart/{id}', [ManagerCartController::class, 'destroy'])->whereNumber('id')->name('cart.destroy');
 
-    Route::delete('/cart/{id}', [ManagerCartController::class, 'destroy'])
-        ->whereNumber('id')
-        ->name('cart.destroy');
+    Route::get('/checkout', [ManagerCheckOutController::class, 'page'])->name('checkout.page');
+    Route::post('/checkout', [ManagerCheckOutController::class, 'store'])->name('checkout.store');
 
-    Route::get('/checkout', [ManagerCheckOutController::class, 'page'])
-        ->name('checkout.page');
+    Route::get('/notifications', [ManagerNotificationController::class, 'index']);
+    Route::post('/notifications/mark-as-read', [ManagerNotificationController::class, 'markAsRead']);
+    Route::post('/notifications/mark-all-as-read', [ManagerNotificationController::class, 'markAllAsRead']);
 
-    Route::post('/checkout', [ManagerCheckOutController::class, 'store'])
-        ->name('checkout.store');
+    Route::get('/goods-receipts', [GoodsReceiptController::class, 'index'])->name('goods-receipts.index');
+    Route::get('/goods-receipts/{purchaseOrder}/create', [GoodsReceiptController::class, 'create'])->name('goods-receipts.create');
+    Route::post('/goods-receipts', [GoodsReceiptController::class, 'store'])->name('goods-receipts.store');
+    Route::get('/goods-receipts/{goodsReceipt}', [GoodsReceiptController::class, 'show'])->name('goods-receipts.show');
 
+
+    Route::get('/purchase-orders/{purchaseOrder}', [ManagerPurchaseOrderController::class, 'show'])->name('purchase-orders.show');
+
+    Route::get('/purchase-orders/{id}/pdf', [ManagerPurchaseOrderController::class, 'generatePDF'])->name('purchase-orders.pdf');
 
 });
 

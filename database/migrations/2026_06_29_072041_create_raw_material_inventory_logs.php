@@ -21,7 +21,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->foreignId('supplier_id')
-                ->constrained('suppliers')
+                ->constrained('suppliers')  
                 ->cascadeOnDelete();
 
             $table->enum('type', [
