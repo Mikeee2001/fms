@@ -160,7 +160,7 @@ export default function ManagerLayout({ children }) {
             items: [
                 {
                     name: "Deliveries",
-                    href: "#", // Replace with your route
+                    href: "/manager/deliveries", // Replace with your route
                     icon: Truck,
                 },
             ],

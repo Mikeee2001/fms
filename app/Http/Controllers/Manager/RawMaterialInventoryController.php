@@ -18,38 +18,67 @@ class RawMaterialInventoryController extends Controller
 {
     public function index()
     {
-        $materials = GoodsReceiptItem::with([
+        $materials = RawMaterialInventory::with([
             'rawMaterial.category',
             'rawMaterial.supplier',
             'rawMaterial.unit',
-            'rawMaterial.images',
             'rawMaterial.primaryImage',
-            'goodsReceipt.purchaseOrder',
         ])
-            ->whereColumn('received_quantity', 'ordered_quantity')
-            ->latest()
-            ->paginate(20)
-            ->through(function ($item) {
+            ->whereHas('rawMaterial.purchaseOrderItems.receiptItems.goodsReceipt', function ($query) {
+                $query->whereIn('status', ['partial', 'completed']);
+            })
+            ->get()
+            ->map(function ($inventory) {
+
+                $material = $inventory->rawMaterial;
+
+                if (!$material) {
+                    return null;
+                }
+
+                // Get only the latest goods receipt
+                $latestReceipt = GoodsReceiptItem::with('goodsReceipt')
+                    ->where('raw_material_id', $material->id)
+                    ->whereHas('goodsReceipt', function ($query) {
+                    $query->whereIn('status', ['partial', 'completed']);
+                })
+                    ->latest('created_at')
+                    ->first();
 
                 return [
-                    'id' => $item->id,
 
-                    'received_quantity' => $item->received_quantity,
+                    'id' => $inventory->id,
 
-                    'last_received_date' => optional(
-                        $item->goodsReceipt
-                    )->received_date,
+                    'rawMaterial' => [
+                        'id' => $material->id,
+                        'name' => $material->material_name,
+                        'purchase_price' => $material->purchase_price,
+                        'category' => $material->category,
+                        'supplier' => $material->supplier,
+                        'unit' => $material->unit,
+                        'primaryImage' => $material->primaryImage,
+                    ],
 
-                    'rawMaterial' => $item->rawMaterial,
+                    // Current Inventory
+                    'current_stock' => $inventory->current_stock,
+                    'stock_status' => $inventory->stock_status,
+
+                    // purchase
+                    'received_quantity' => $latestReceipt->received_quantity,
+                    'ordered_quantity' => $latestReceipt->ordered_quantity,
+                    'remaining_quantity' => $latestReceipt->remaining_quantity,
+
+                    'receipt_status' => optional(optional($latestReceipt)->goodsReceipt)->status,
+
+                    'last_received_date' => optional(optional($latestReceipt)->goodsReceipt)->received_date,
                 ];
-            });
+            })
+            ->filter()
+            ->values();
 
-        return Inertia::render(
-            'Manager/Inventory/Index',
-            [
-                'materials' => $materials,
-            ]
-        );
+        return Inertia::render('Manager/Inventory/Index', [
+            'materials' => $materials,
+        ]);
     }
 
     public function store(Request $request)

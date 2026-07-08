@@ -40,5 +40,10 @@ class RawMaterialInventoryLog extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function rawMaterial()
+    {
+        return $this->belongsTo(RawMaterial::class);
+    }
+
 
 }

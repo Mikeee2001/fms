@@ -57,4 +57,6 @@ class RawMaterialInventory extends Model
 
         return 'in_stock';
     }
+
+
 }

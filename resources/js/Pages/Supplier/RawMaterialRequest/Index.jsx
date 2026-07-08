@@ -66,10 +66,6 @@ export default function Index({ requests = [] }) {
                                         Manager
                                     </th>
 
-                                    {/* <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
-                                        Supplier
-                                    </th> */}
-
                                     <th className="px-6 py-4 text-left text-sm font-semibold text-stone-300">
                                         Items
                                     </th>

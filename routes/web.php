@@ -13,9 +13,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\SupplierController;
-
 use App\Http\Controllers\Auth\SupplierRegisterController;
-
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
@@ -23,24 +21,20 @@ use App\Http\Controllers\Customer\DeliveryRequestController;
 use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
 use App\Http\Controllers\Customer\ProductController as CustomerProductController;
 use App\Http\Controllers\Customer\ProfileController;
-
-
 use App\Http\Controllers\Delivery\DashboardController;
-
-
 use App\Http\Controllers\Manager\CartController as ManagerCartController;
 use App\Http\Controllers\Manager\CheckOutController as ManagerCheckOutController;
 use App\Http\Controllers\Manager\DashboardController as ManagerDashboardController;
+use App\Http\Controllers\Manager\DeliveriesController;
 use App\Http\Controllers\Manager\GoodsReceiptController;
 use App\Http\Controllers\Manager\ManagerNotificationController;
+use App\Http\Controllers\Manager\PurchaseOrderController as ManagerPurchaseOrderController;
 use App\Http\Controllers\Manager\RawMaterialInventoryController;
 use App\Http\Controllers\Manager\RawMaterialPageController;
-use App\Http\Controllers\Manager\PurchaseOrderController as ManagerPurchaseOrderController;
-
 use App\Http\Controllers\PaymentController;
+// use App\Http\Controllers\RawInventoryController;
+use App\Http\Controllers\RawStockLogController;
 use App\Http\Controllers\StaffPasswordController;
-
-
 use App\Http\Controllers\Supplier\DashboardController as SupplierDashboard;
 use App\Http\Controllers\Supplier\MaterialController as SupplierMaterialController;
 use App\Http\Controllers\Supplier\MaterialController as SupplierPaymentController;
@@ -48,8 +42,6 @@ use App\Http\Controllers\Supplier\NotificationController as SupplierNotificaiton
 use App\Http\Controllers\Supplier\PurchaseOrderController as SupplierPurchaseOrderController;
 use App\Http\Controllers\Supplier\RawMaterialRequestController;
 use App\Http\Controllers\Supplier\SupplierProfileController;
-
-
 use App\Http\Controllers\WebhookController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -338,6 +330,9 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 
     Route::get('/purchase-orders/{id}/pdf', [ManagerPurchaseOrderController::class, 'generatePDF'])->name('purchase-orders.pdf');
 
+    Route::post('/deliveries/{purchaseOrder}/receive', [DeliveriesController::class, 'receive'])->name('deliveries.receive');
+    Route::get('/deliveries/', [DeliveriesController::class, 'index'])->name('deliveries.index');
+    Route::get('/inventory/stock-logs', [RawStockLogController::class, 'stockLogs'])->name('inventory.stock-logs');
 });
 
 Route::get('/staff/setup-password/{user}', [StaffPasswordController::class, 'show'])->name('staff.setup-password');
